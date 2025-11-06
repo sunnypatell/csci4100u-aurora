@@ -1,0 +1,184 @@
+import 'package:flutter/material.dart';
+
+class LandingScreen extends StatelessWidget {
+  const LandingScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5EFE7),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Spacer(flex: 2),
+              
+              _buildGlowingCandle(),
+              
+              const SizedBox(height: 56),
+              
+              const Text(
+                'Aurora',
+                style: TextStyle(
+                  fontSize: 52,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF2F2E2C),
+                  letterSpacing: 0.5,
+                  height: 1.2,
+                ),
+              ),
+              
+              const SizedBox(height: 20),
+              
+              const Text(
+                'A private space to pause, breathe, and\nunderstand your mind.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  height: 1.6,
+                  color: Color(0xFF6F6C66),
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.2,
+                ),
+              ),
+              
+              const SizedBox(height: 56),
+              
+              _buildBeginButton(context),
+              
+              const SizedBox(height: 28),
+              
+              const Text(
+                'Your thoughts stay yours. Always.',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF6F6C66),
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 0.1,
+                ),
+              ),
+              
+              const Spacer(flex: 3),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlowingCandle() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Outer glow
+        Container(
+          width: 140,
+          height: 140,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: RadialGradient(
+              colors: [
+                const Color(0xFFF5C97B).withOpacity(0.3),
+                const Color(0xFFF5C97B).withOpacity(0.0),
+              ],
+              stops: const [0.3, 1.0],
+            ),
+          ),
+        ),
+        // Middle glow
+        Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: RadialGradient(
+              colors: [
+                const Color(0xFFF5C97B).withOpacity(0.5),
+                const Color(0xFFF5C97B).withOpacity(0.0),
+              ],
+              stops: const [0.4, 1.0],
+            ),
+          ),
+        ),
+        // Candle body
+        Container(
+          width: 50,
+          height: 70,
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFBF5),
+            borderRadius: BorderRadius.circular(25),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFF5C97B).withOpacity(0.3),
+                blurRadius: 20,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const SizedBox(height: 8),
+              // Flame
+              Container(
+                width: 12,
+                height: 18,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFFFFFBF5),
+                      Color(0xFFF5C97B),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBeginButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: () {
+          // TODO: Navigate to dashboard
+          // Navigator.pushReplacementNamed(context, '/dashboard');
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFF5C97B),
+          foregroundColor: const Color(0xFF2F2E2C),
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Text(
+              'Begin reflection',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.3,
+              ),
+            ),
+            SizedBox(width: 10),
+            Icon(Icons.arrow_forward, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}

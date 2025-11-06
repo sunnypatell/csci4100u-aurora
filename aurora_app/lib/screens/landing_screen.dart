@@ -163,9 +163,9 @@ class LandingScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: Row(
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Text(
               'Begin reflection',
               style: TextStyle(

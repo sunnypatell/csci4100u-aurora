@@ -1,0 +1,839 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+ Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="1.1.5" use-changelog="false" max-obj-count="15"
+	 last-position="0,294" last-zoom="0.55" scene-rect="-400,0,3327.38,2415.12"
+	 default-schema="public" default-owner="postgres"
+	 layers="Default layer"
+	 active-layers="0"
+	 layer-name-colors="#000000"
+	 layer-rect-colors="#b4b4b4"
+	 show-layer-names="false" show-layer-rects="false">
+<database name="Mobile_Dev_Rough_UML_Project" encoding="UTF8" lc-collate="English_United States.1252" lc-ctype="English_United States.1252" is-template="false" allow-conns="true">
+	<role name="postgres"/>
+	<tablespace name="pg_default"/>
+</database>
+
+<schema name="public" layers="0" fill-color="#e1e1e1" name-color="#000000" sql-disabled="true">
+</schema>
+
+<tag name="test">
+	<style id="table-body" colors="#474f56,#474f56,#595e61"/>
+	<style id="table-ext-body" colors="#474f56,#474f56,#595e61"/>
+	<style id="table-name" colors="#000000"/>
+	<style id="table-schema-name" colors="#000000"/>
+	<style id="table-title" colors="#3275b0,#6ec0ff,#77cbff"/>
+	<style id="table-toggler-body" colors="#474f56,#474f56,#595e61"/>
+	<style id="table-toggler-btns" colors="#3275b0,#6ec0ff,#77cbff"/>
+</tag>
+<sequence name="users_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="9223372036854775807" cache="1">
+	<schema name="public"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="users" layers="0" alias="Single-device local account model. Email optional for future s" collapse-mode="2" max-obj-count="9" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment> <![CDATA[Single-device local account model. Email optional for future sync.]]> </comment>
+	<position x="680" y="120"/>
+	<column name="id" not-null="true" sequence="public.users_id_seq">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="full_name" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="email">
+		<type name="text" length="0"/>
+	</column>
+	<column name="locale" alias="BCP47 code like en or fr." not-null="true" default-value="'en'">
+		<type name="text" length="0"/>
+		<comment> <![CDATA[BCP47 code like en or fr.]]> </comment>
+	</column>
+	<column name="avatar_uri">
+		<type name="text" length="0"/>
+	</column>
+	<column name="created_at" not-null="true" default-value="now()">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="updated_at" not-null="true" default-value="now()">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="deleted_at">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="users_pkey" type="pk-constr" table="public.users">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="users_email_key" type="uq-constr" table="public.users">
+		<columns names="email" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="user_settings" layers="0" alias="One row per user. Holds non-sensitive preferences." collapse-mode="2" max-obj-count="9" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment> <![CDATA[One row per user. Holds non-sensitive preferences.]]> </comment>
+	<position x="680" y="500"/>
+	<column name="user_id" not-null="true">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="dark_mode" not-null="true" default-value="false">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="notifications_enabled" not-null="true" default-value="true">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="timezone" not-null="true" default-value="'UTC'">
+		<type name="text" length="0"/>
+	</column>
+	<column name="share_diagnostics" not-null="true" default-value="false">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="measurement_system" not-null="true" default-value="'metric'">
+		<type name="text" length="0"/>
+	</column>
+	<column name="created_at" not-null="true" default-value="now()">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="updated_at" not-null="true" default-value="now()">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="user_settings_pkey" type="pk-constr" table="public.user_settings">
+		<columns names="user_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="mood_checkins_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="9223372036854775807" cache="1">
+	<schema name="public"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="mood_checkins" layers="0" alias="User mood entries. Multiple per day allowed." collapse-mode="2" max-obj-count="13" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment> <![CDATA[User mood entries. Multiple per day allowed.]]> </comment>
+	<position x="-100" y="840"/>
+	<column name="id" not-null="true" sequence="public.mood_checkins_id_seq">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="user_id" not-null="true">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="mood_score" not-null="true">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="mood_label">
+		<type name="text" length="0"/>
+	</column>
+	<column name="note">
+		<type name="text" length="0"/>
+	</column>
+	<column name="latitude">
+		<type name="numeric" length="9" precision="6"/>
+	</column>
+	<column name="longitude">
+		<type name="numeric" length="9" precision="6"/>
+	</column>
+	<column name="geocode_text">
+		<type name="text" length="0"/>
+	</column>
+	<column name="created_at" not-null="true" default-value="now()">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="updated_at" not-null="true" default-value="now()">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="deleted_at">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="mood_checkins_mood_score_check" type="ck-constr" table="public.mood_checkins">
+			<expression> <![CDATA[((mood_score >= 1) AND (mood_score <= 5))]]> </expression>
+	</constraint>
+	<constraint name="mood_checkins_latitude_check" type="ck-constr" table="public.mood_checkins">
+			<expression> <![CDATA[((latitude >= ('-90'::integer)::numeric) AND (latitude <= (90)::numeric))]]> </expression>
+	</constraint>
+	<constraint name="mood_checkins_longitude_check" type="ck-constr" table="public.mood_checkins">
+			<expression> <![CDATA[((longitude >= ('-180'::integer)::numeric) AND (longitude <= (180)::numeric))]]> </expression>
+	</constraint>
+	<constraint name="mood_checkins_pkey" type="pk-constr" table="public.mood_checkins">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<index name="idx_mood_user_time" table="public.mood_checkins"
+	 concurrent="false" unique="false" fast-update="false" buffering="false" nulls-not-distinct="false"
+	 index-type="btree" factor="90">
+		<idxelement use-sorting="false">
+			<column name="user_id"/>
+		</idxelement>
+		<idxelement use-sorting="true" nulls-first="true" asc-order="false">
+			<column name="created_at"/>
+		</idxelement>
+</index>
+
+<sequence name="journal_entries_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="9223372036854775807" cache="1">
+	<schema name="public"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="journal_entries" layers="0" alias="Free-form journaling linked optionally to a check-in." collapse-mode="2" max-obj-count="10" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment> <![CDATA[Free-form journaling linked optionally to a check-in.]]> </comment>
+	<position x="660" y="840"/>
+	<column name="id" not-null="true" sequence="public.journal_entries_id_seq">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="user_id" not-null="true">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="title">
+		<type name="text" length="0"/>
+	</column>
+	<column name="body" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="mood_checkin_id">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="is_private" not-null="true" default-value="true">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="created_at" not-null="true" default-value="now()">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="updated_at" not-null="true" default-value="now()">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="deleted_at">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="journal_entries_pkey" type="pk-constr" table="public.journal_entries">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<index name="idx_journal_user_time" table="public.journal_entries"
+	 concurrent="false" unique="false" fast-update="false" buffering="false" nulls-not-distinct="false"
+	 index-type="btree" factor="90">
+		<idxelement use-sorting="false">
+			<column name="user_id"/>
+		</idxelement>
+		<idxelement use-sorting="true" nulls-first="true" asc-order="false">
+			<column name="created_at"/>
+		</idxelement>
+</index>
+
+<sequence name="journal_assets_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="9223372036854775807" cache="1">
+	<schema name="public"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="journal_assets" layers="0" alias="Binary lives on device storage; DB stores metadata." collapse-mode="2" max-obj-count="12" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment> <![CDATA[Binary lives on device storage; DB stores metadata.]]> </comment>
+	<position x="540" y="1280"/>
+	<column name="id" not-null="true" sequence="public.journal_assets_id_seq">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="entry_id" not-null="true">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="asset_type" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="uri" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="mime_type">
+		<type name="text" length="0"/>
+	</column>
+	<column name="file_ext">
+		<type name="text" length="0"/>
+	</column>
+	<column name="duration_sec">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="width_px">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="height_px">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="created_at" not-null="true" default-value="now()">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="journal_assets_asset_type_check" type="ck-constr" table="public.journal_assets">
+			<expression> <![CDATA[(asset_type = ANY (ARRAY['image'::text, 'audio'::text]))]]> </expression>
+	</constraint>
+	<constraint name="journal_assets_duration_sec_check" type="ck-constr" table="public.journal_assets">
+			<expression> <![CDATA[(duration_sec >= 0)]]> </expression>
+	</constraint>
+	<constraint name="journal_assets_width_px_check" type="ck-constr" table="public.journal_assets">
+			<expression> <![CDATA[(width_px >= 0)]]> </expression>
+	</constraint>
+	<constraint name="journal_assets_height_px_check" type="ck-constr" table="public.journal_assets">
+			<expression> <![CDATA[(height_px >= 0)]]> </expression>
+	</constraint>
+	<constraint name="journal_assets_pkey" type="pk-constr" table="public.journal_assets">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<index name="idx_assets_entry" table="public.journal_assets"
+	 concurrent="false" unique="false" fast-update="false" buffering="false" nulls-not-distinct="false"
+	 index-type="btree" factor="90">
+		<idxelement use-sorting="false">
+			<column name="entry_id"/>
+		</idxelement>
+</index>
+
+<sequence name="tags_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="9223372036854775807" cache="1">
+	<schema name="public"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="tags" layers="0" alias="User-defined tags for organizing journal entries." collapse-mode="2" max-obj-count="2" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment> <![CDATA[User-defined tags for organizing journal entries.]]> </comment>
+	<position x="1260" y="1320"/>
+	<column name="id" not-null="true" sequence="public.tags_id_seq">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="name" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="tags_pkey" type="pk-constr" table="public.tags">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="tags_name_key" type="uq-constr" table="public.tags">
+		<columns names="name" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="journal_entry_tags" layers="0" alias="Bridge table between journal_entries and tags." collapse-mode="2" max-obj-count="3" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment> <![CDATA[Bridge table between journal_entries and tags.]]> </comment>
+	<position x="1020" y="1600"/>
+	<column name="entry_id" not-null="true">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="tag_id" not-null="true">
+		<type name="bigint" length="0"/>
+	</column>
+	<constraint name="journal_entry_tags_pkey" type="pk-constr" table="public.journal_entry_tags">
+		<columns names="entry_id,tag_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="activities_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="9223372036854775807" cache="1">
+	<schema name="public"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="activities" layers="0" alias="Static definitions of guided practices." collapse-mode="2" max-obj-count="10" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment> <![CDATA[Static definitions of guided practices.]]> </comment>
+	<position x="1200" y="880"/>
+	<column name="id" not-null="true" sequence="public.activities_id_seq">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="code" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="title" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="description">
+		<type name="text" length="0"/>
+	</column>
+	<column name="min_duration_sec">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="max_duration_sec">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="category" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="created_at" not-null="true" default-value="now()">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="updated_at" not-null="true" default-value="now()">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="activities_min_duration_sec_check" type="ck-constr" table="public.activities">
+			<expression> <![CDATA[(min_duration_sec >= 0)]]> </expression>
+	</constraint>
+	<constraint name="activities_max_duration_sec_check" type="ck-constr" table="public.activities">
+			<expression> <![CDATA[(max_duration_sec >= 0)]]> </expression>
+	</constraint>
+	<constraint name="activities_category_check" type="ck-constr" table="public.activities">
+			<expression> <![CDATA[(category = ANY (ARRAY['breathing'::text, 'meditation'::text, 'mindfulness'::text, 'custom'::text]))]]> </expression>
+	</constraint>
+	<constraint name="activities_pkey" type="pk-constr" table="public.activities">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="activities_code_key" type="uq-constr" table="public.activities">
+		<columns names="code" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="activity_sessions_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="9223372036854775807" cache="1">
+	<schema name="public"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="activity_sessions" layers="0" alias="Each execution of an activity by the user." collapse-mode="2" max-obj-count="8" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment> <![CDATA[Each execution of an activity by the user.]]> </comment>
+	<position x="-140" y="1380"/>
+	<column name="id" not-null="true" sequence="public.activity_sessions_id_seq">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="user_id" not-null="true">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="activity_id" not-null="true">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="started_at" not-null="true">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="ended_at">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="duration_sec">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="notes">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="activity_sessions_duration_sec_check" type="ck-constr" table="public.activity_sessions">
+			<expression> <![CDATA[((duration_sec IS NULL) OR (duration_sec >= 0))]]> </expression>
+	</constraint>
+	<constraint name="activity_sessions_pkey" type="pk-constr" table="public.activity_sessions">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<index name="idx_activity_sessions_user_time" table="public.activity_sessions"
+	 concurrent="false" unique="false" fast-update="false" buffering="false" nulls-not-distinct="false"
+	 index-type="btree" factor="90">
+		<idxelement use-sorting="false">
+			<column name="user_id"/>
+		</idxelement>
+		<idxelement use-sorting="true" nulls-first="true" asc-order="false">
+			<column name="started_at"/>
+		</idxelement>
+</index>
+
+<sequence name="reminders_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="9223372036854775807" cache="1">
+	<schema name="public"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="reminders" layers="0" collapse-mode="2" max-obj-count="15" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="1680" y="780"/>
+	<column name="id" not-null="true" sequence="public.reminders_id_seq">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="user_id" not-null="true">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="title" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="message">
+		<type name="text" length="0"/>
+	</column>
+	<column name="kind" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="repeat_rule" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="next_fire_at">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="time_of_day">
+		<type name="time" length="0"/>
+	</column>
+	<column name="day_of_week">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="is_active" not-null="true" default-value="true">
+		<type name="boolean" length="0"/>
+	</column>
+	<column name="created_at" not-null="true" default-value="now()">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="updated_at" not-null="true" default-value="now()">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<column name="deleted_at">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="reminders_kind_check" type="ck-constr" table="public.reminders">
+			<expression> <![CDATA[(kind = ANY (ARRAY['mood_checkin'::text, 'journal'::text, 'meal'::text, 'walk'::text, 'custom'::text]))]]> </expression>
+	</constraint>
+	<constraint name="reminders_repeat_rule_check" type="ck-constr" table="public.reminders">
+			<expression> <![CDATA[(repeat_rule = ANY (ARRAY['once'::text, 'daily'::text, 'weekly'::text, 'weekday'::text, 'weekend'::text, 'custom'::text]))]]> </expression>
+	</constraint>
+	<constraint name="reminders_day_of_week_check" type="ck-constr" table="public.reminders">
+			<expression> <![CDATA[((day_of_week >= 0) AND (day_of_week <= 6))]]> </expression>
+	</constraint>
+	<constraint name="reminders_pkey" type="pk-constr" table="public.reminders">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<index name="idx_reminders_user_active" table="public.reminders"
+	 concurrent="false" unique="false" fast-update="false" buffering="false" nulls-not-distinct="false"
+	 index-type="btree" factor="90">
+		<idxelement use-sorting="false">
+			<column name="user_id"/>
+		</idxelement>
+		<idxelement use-sorting="false">
+			<column name="is_active"/>
+		</idxelement>
+</index>
+
+<sequence name="streak_pauses_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="9223372036854775807" cache="1">
+	<schema name="public"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="streak_pauses" layers="0" alias="Windows during which streak calculations pause." collapse-mode="2" max-obj-count="7" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment> <![CDATA[Windows during which streak calculations pause.]]> </comment>
+	<position x="1360" y="460"/>
+	<column name="id" not-null="true" sequence="public.streak_pauses_id_seq">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="user_id" not-null="true">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="start_date" not-null="true">
+		<type name="date" length="0"/>
+	</column>
+	<column name="end_date" not-null="true">
+		<type name="date" length="0"/>
+	</column>
+	<column name="reason">
+		<type name="text" length="0"/>
+	</column>
+	<column name="created_at" not-null="true" default-value="now()">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="streak_pauses_pkey" type="pk-constr" table="public.streak_pauses">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="resources_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="9223372036854775807" cache="1">
+	<schema name="public"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="resources" layers="0" alias="Reference list used by Crisis &amp; Resources screen." collapse-mode="2" max-obj-count="9" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment> <![CDATA[Reference list used by Crisis & Resources screen.]]> </comment>
+	<position x="-60" y="1760"/>
+	<column name="id" not-null="true" sequence="public.resources_id_seq">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="kind" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="name" not-null="true">
+		<type name="text" length="0"/>
+	</column>
+	<column name="phone">
+		<type name="text" length="0"/>
+	</column>
+	<column name="sms">
+		<type name="text" length="0"/>
+	</column>
+	<column name="url">
+		<type name="text" length="0"/>
+	</column>
+	<column name="notes">
+		<type name="text" length="0"/>
+	</column>
+	<column name="created_at" not-null="true" default-value="now()">
+		<type name="timestamp with time zone" length="0" with-timezone="true"/>
+	</column>
+	<constraint name="resources_kind_check" type="ck-constr" table="public.resources">
+			<expression> <![CDATA[(kind = ANY (ARRAY['hotline'::text, 'hospital'::text, 'clinic'::text, 'counseling'::text, 'organization'::text]))]]> </expression>
+	</constraint>
+	<constraint name="resources_pkey" type="pk-constr" table="public.resources">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<sequence name="resource_locations_id_seq" cycle="false" start="1" increment="1" min-value="1" max-value="9223372036854775807" cache="1">
+	<schema name="public"/>
+	<role name="postgres"/>
+</sequence>
+
+<table name="resource_locations" layers="0" collapse-mode="2" max-obj-count="9" z-value="0">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="660" y="1780"/>
+	<column name="id" not-null="true" sequence="public.resource_locations_id_seq">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="resource_id" not-null="true">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="address_line1">
+		<type name="text" length="0"/>
+	</column>
+	<column name="city">
+		<type name="text" length="0"/>
+	</column>
+	<column name="province">
+		<type name="text" length="0"/>
+	</column>
+	<column name="postal_code">
+		<type name="text" length="0"/>
+	</column>
+	<column name="latitude">
+		<type name="numeric" length="9" precision="6"/>
+	</column>
+	<column name="longitude">
+		<type name="numeric" length="9" precision="6"/>
+	</column>
+	<constraint name="resource_locations_latitude_check" type="ck-constr" table="public.resource_locations">
+			<expression> <![CDATA[((latitude >= ('-90'::integer)::numeric) AND (latitude <= (90)::numeric))]]> </expression>
+	</constraint>
+	<constraint name="resource_locations_longitude_check" type="ck-constr" table="public.resource_locations">
+			<expression> <![CDATA[((longitude >= ('-180'::integer)::numeric) AND (longitude <= (180)::numeric))]]> </expression>
+	</constraint>
+	<constraint name="resource_locations_pkey" type="pk-constr" table="public.resource_locations">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<index name="idx_resource_locations_geo" table="public.resource_locations"
+	 concurrent="false" unique="false" fast-update="false" buffering="false" nulls-not-distinct="false"
+	 index-type="btree" factor="90">
+		<idxelement use-sorting="false">
+			<column name="latitude"/>
+		</idxelement>
+		<idxelement use-sorting="false">
+			<column name="longitude"/>
+		</idxelement>
+</index>
+
+<textbox name="(Side Cluster for Resources)" layers="0" bold="true" z-value="0" width="163.891" font-size="15">
+	<position x="400" y="1960"/>
+	<comment> <![CDATA[(Side Cluster for Resources)]]> </comment>
+</textbox>
+
+<textbox name="UML Code Design - Sunny Patel (100867748)" layers="0" bold="true" z-value="0" width="453.297" font-size="15">
+	<position x="640" y="60"/>
+	<comment> <![CDATA[UML Code Design - Sunny Patel (100867748)]]> </comment>
+</textbox>
+
+<constraint name="user_settings_user_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.users" table="public.user_settings">
+	<columns names="user_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="mood_checkins_user_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.users" table="public.mood_checkins">
+	<columns names="user_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="journal_entries_user_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.users" table="public.journal_entries">
+	<columns names="user_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="journal_entries_mood_checkin_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="SET NULL" ref-table="public.mood_checkins" table="public.journal_entries">
+	<columns names="mood_checkin_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="journal_assets_entry_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.journal_entries" table="public.journal_assets">
+	<columns names="entry_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="journal_entry_tags_entry_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.journal_entries" table="public.journal_entry_tags">
+	<columns names="entry_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="journal_entry_tags_tag_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.tags" table="public.journal_entry_tags">
+	<columns names="tag_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="activity_sessions_user_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.users" table="public.activity_sessions">
+	<columns names="user_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="activity_sessions_activity_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="RESTRICT" ref-table="public.activities" table="public.activity_sessions">
+	<columns names="activity_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="reminders_user_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.users" table="public.reminders">
+	<columns names="user_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="streak_pauses_user_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.users" table="public.streak_pauses">
+	<columns names="user_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="resource_locations_resource_id_fkey" type="fk-constr" comparison-type="MATCH SIMPLE"
+	 upd-action="NO ACTION" del-action="CASCADE" ref-table="public.resources" table="public.resource_locations">
+	<columns names="resource_id" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<relationship name="rel_user_settings_users" type="relfk" layers="0"
+	 custom-color="#916fba"
+	 src-table="public.user_settings"
+	 dst-table="public.users" reference-fk="user_settings_user_id_fkey"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="10.5318" y="-29.353"/>
+	</label>
+</relationship>
+
+<relationship name="rel_mood_checkins_users" type="relfk" layers="0"
+	 custom-color="#fa9d06"
+	 src-table="public.mood_checkins"
+	 dst-table="public.users" reference-fk="mood_checkins_user_id_fkey"
+	 src-required="false" dst-required="true"/>
+
+<relationship name="rel_journal_entries_users" type="relfk" layers="0"
+	 custom-color="#4eb8b4"
+	 src-table="public.journal_entries"
+	 dst-table="public.users" reference-fk="journal_entries_user_id_fkey"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="8.86715" y="150.647"/>
+	</label>
+</relationship>
+
+<relationship name="rel_journal_entries_mood_checkins" type="relfk" layers="0"
+	 custom-color="#d870ad"
+	 src-table="public.journal_entries"
+	 dst-table="public.mood_checkins" reference-fk="journal_entries_mood_checkin_id_fkey"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="28.8118" y="-36.6205"/>
+	</label>
+</relationship>
+
+<relationship name="rel_journal_assets_journal_entries" type="relfk" layers="0"
+	 custom-color="#ff0c50"
+	 src-table="public.journal_assets"
+	 dst-table="public.journal_entries" reference-fk="journal_assets_entry_id_fkey"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="10.343" y="-30.253"/>
+	</label>
+</relationship>
+
+<relationship name="rel_journal_entry_tags_journal_entries" type="relfk" layers="0"
+	 custom-color="#6e6a48"
+	 src-table="public.journal_entry_tags"
+	 dst-table="public.journal_entries" reference-fk="journal_entry_tags_entry_id_fkey"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="51.2456" y="-10.253"/>
+	</label>
+</relationship>
+
+<relationship name="rel_journal_entry_tags_tags" type="relfk" layers="0"
+	 custom-color="#fce8f7"
+	 src-table="public.journal_entry_tags"
+	 dst-table="public.tags" reference-fk="journal_entry_tags_tag_id_fkey"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="9.16229" y="-38.853"/>
+	</label>
+</relationship>
+
+<relationship name="rel_activity_sessions_users" type="relfk" layers="0"
+	 custom-color="#f51c28"
+	 src-table="public.activity_sessions"
+	 dst-table="public.users" reference-fk="activity_sessions_user_id_fkey"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="28.8454" y="-29.353"/>
+	</label>
+</relationship>
+
+<relationship name="rel_activity_sessions_activities" type="relfk" layers="0"
+	 custom-color="#1e9dd7"
+	 src-table="public.activity_sessions"
+	 dst-table="public.activities" reference-fk="activity_sessions_activity_id_fkey"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="-332.61" y="114.758"/>
+	</label>
+</relationship>
+
+<relationship name="rel_reminders_users" type="relfk" layers="0"
+	 custom-color="#442ceb"
+	 src-table="public.reminders"
+	 dst-table="public.users" reference-fk="reminders_user_id_fkey"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="-21.1666" y="-50.8573"/>
+	</label>
+</relationship>
+
+<relationship name="rel_streak_pauses_users" type="relfk" layers="0"
+	 custom-color="#6ccbb2"
+	 src-table="public.streak_pauses"
+	 dst-table="public.users" reference-fk="streak_pauses_user_id_fkey"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="-263.89" y="284.988"/>
+	</label>
+</relationship>
+
+<relationship name="rel_resource_locations_resources" type="relfk" layers="0"
+	 custom-color="#4725c8"
+	 src-table="public.resource_locations"
+	 dst-table="public.resources" reference-fk="resource_locations_resource_id_fkey"
+	 src-required="false" dst-required="true">
+	<label ref-type="name-label">
+		<position x="-16.9838" y="-29.5102"/>
+	</label>
+</relationship>
+
+</dbmodel>

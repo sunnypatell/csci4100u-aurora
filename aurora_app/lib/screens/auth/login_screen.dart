@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../widgets/auth/custom_text_field.dart';
 import '../../widgets/auth/auth_button.dart';
+import '../../services/auth_service.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -26,35 +27,26 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isLoading = true);
-
     try {
-      // TODO: Implement Firebase authentication
-      // await FirebaseAuth.instance.signInWithEmailAndPassword(
-      //   email: _emailController.text.trim(),
-      //   password: _passwordController.text,
-      // );
-      
-      await Future.delayed(const Duration(seconds: 2)); // Simulated delay
-      
-      if (mounted) {
-        // TODO: Navigate to dashboard
-        // Navigator.pushReplacementNamed(context, '/dashboard');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login successful! (Firebase pending)')),
-        );
-      }
+      await AuthService.instance.signIn(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Signed in successfully')),
+      );
+      // TODO: Navigate to dashboard after implementation
     } catch (e) {
+      final msg = AuthService.instance.mapAuthError(e is Exception ? e : Exception(e.toString()));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login failed: ${e.toString()}')),
+          SnackBar(content: Text(msg)),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

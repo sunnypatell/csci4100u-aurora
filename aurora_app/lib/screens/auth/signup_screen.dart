@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../widgets/auth/custom_text_field.dart';
 import '../../widgets/auth/auth_button.dart';
+import '../../services/auth_service.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -30,36 +31,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Future<void> _handleSignUp() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isLoading = true);
-
     try {
-      // TODO: Implement Firebase authentication
-      // UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-      //   email: _emailController.text.trim(),
-      //   password: _passwordController.text,
-      // );
-      // await userCredential.user?.updateDisplayName(_nameController.text.trim());
-      
-      await Future.delayed(const Duration(seconds: 2)); // Simulated delay
-      
-      if (mounted) {
-        // TODO: Navigate to dashboard or onboarding
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account created! (Firebase pending)')),
-        );
-        Navigator.pop(context);
-      }
+      await AuthService.instance.signUp(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        displayName: _nameController.text.trim(),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account created!')),
+      );
+      Navigator.pop(context); // Back to login
     } catch (e) {
+      final msg = AuthService.instance.mapAuthError(e is Exception ? e : Exception(e.toString()));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Sign up failed: ${e.toString()}')),
+          SnackBar(content: Text(msg)),
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

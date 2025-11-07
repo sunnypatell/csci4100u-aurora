@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'auth/login_screen.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -151,8 +152,12 @@ class LandingScreen extends StatelessWidget {
       height: 56,
       child: ElevatedButton(
         onPressed: () {
-          // TODO: Navigate to dashboard
-          // Navigator.pushReplacementNamed(context, '/dashboard');
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LoginScreen(),
+            ),
+          );
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFF5C97B),

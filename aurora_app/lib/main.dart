@@ -2,22 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'screens/landing_screen.dart';
+import 'screens/home_screen.dart';
+import 'services/auth_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize Firebase only after running flutterfire configure which
-  // replaces the placeholder firebase_options.dart with real values.
-  try {
-    // When generated, firebase_options.dart will expose proper options and a flag.
-    // Here we check placeholder flag to avoid initializing with empty values.
-    // Replace this logic with: await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-    if (DefaultFirebaseOptions.isConfigured) {
-      await Firebase.initializeApp();
-    }
-  } catch (e) {
-    // Safe to continue without Firebase for non-auth flows until configured.
-    debugPrint('Firebase init skipped: $e');
-  }
+  // Initialize Firebase for the current platform using FlutterFire generated options.
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const AuroraApp());
 }
 
@@ -36,7 +29,33 @@ class AuroraApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
       ),
-      home: const LandingScreen(),
+      home: const _AuthGate(),
+    );
+  }
+}
+
+class _AuthGate extends StatelessWidget {
+  const _AuthGate();
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: AuthService.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        // Loading state while Firebase initializes/auth checks
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        // If signed in, go to home, else show landing/login flow
+        if (snapshot.hasData) {
+          return const HomeScreen();
+        } else {
+          return const LandingScreen();
+        }
+      },
     );
   }
 }

@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _resetting = false;
 
   @override
   void dispose() {
@@ -47,6 +48,34 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleResetPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter a valid email to reset password')),
+      );
+      return;
+    }
+    setState(() => _resetting = true);
+    try {
+      await AuthService.instance.sendPasswordResetEmail(email);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Password reset email sent to $email')),
+        );
+      }
+    } catch (e) {
+      final msg = AuthService.instance.mapAuthError(e is Exception ? e : Exception(e.toString()));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _resetting = false);
     }
   }
 
@@ -152,9 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {
-                        // TODO: Implement forgot password
-                      },
+                      onPressed: _resetting ? null : _handleResetPassword,
                       child: const Text(
                         'Forgot password?',
                         style: TextStyle(
@@ -174,6 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _handleLogin,
                     isLoading: _isLoading,
                   ),
+
                   
                   const SizedBox(height: 32),
                   

@@ -21,6 +21,9 @@ class AuthService {
   }
 
   Future<void> signOut() async => _auth.signOut();
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
+  }
 
   String mapAuthError(Exception e) {
     if (e is FirebaseAuthException) {

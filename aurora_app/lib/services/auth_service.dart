@@ -37,8 +37,8 @@ class AuthService {
       }
 
       return user;
-    } on FirebaseAuthException catch (e) {
-      throw e; // let UI map & show friendly message
+    } on FirebaseAuthException {
+      rethrow; // let UI map & show friendly message while preserving stack trace
     } on PlatformException catch (e) {
       // Convert to a Firebase-like error for unified handling
       throw FirebaseException(plugin: 'platform', code: e.code, message: e.message);
@@ -52,8 +52,8 @@ class AuthService {
     try {
       final cred = await _auth.signInWithEmailAndPassword(email: email, password: password);
       return cred.user;
-    } on FirebaseAuthException catch (e) {
-      throw e; // propagate for mapping
+    } on FirebaseAuthException {
+      rethrow; // propagate for mapping while preserving stack trace
     } on PlatformException catch (e) {
       throw FirebaseException(plugin: 'platform', code: e.code, message: e.message);
     } catch (e) {
@@ -89,8 +89,8 @@ class AuthService {
       }
 
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set(updateData, SetOptions(merge: true));
-    } on FirebaseException catch (e) {
-      throw e;
+    } on FirebaseException {
+      rethrow;
     } catch (e) {
       throw FirebaseException(plugin: 'firestore', code: 'unknown', message: e.toString());
     }

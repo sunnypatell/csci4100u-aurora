@@ -63,4 +63,48 @@ class JournalService {
         .doc(entryId)
         .delete();
   }
+
+  // Update an existing entry
+  Future<void> updateEntry(
+    String entryId, {
+    String? title,
+    String? content,
+    String? mood,
+  }) async {
+    final uid = userId;
+    if (uid == null) {
+      throw FirebaseException(
+          plugin: 'auth', code: 'no-current-user', message: 'No user signed in.');
+    }
+    final Map<String, dynamic> update = {
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+    if (title != null) update['title'] = title.trim();
+    if (content != null) update['content'] = content.trim();
+    if (mood != null) update['mood'] = mood;
+    if (update.length == 1) return; // nothing to update besides timestamp
+    await _db
+        .collection('users')
+        .doc(uid)
+        .collection('journalEntries')
+        .doc(entryId)
+        .set(update, SetOptions(merge: true));
+  }
+
+  // Get a single entry (returns null if not found)
+  Future<Map<String, dynamic>?> getEntry(String entryId) async {
+    final uid = userId;
+    if (uid == null) {
+      throw FirebaseException(
+          plugin: 'auth', code: 'no-current-user', message: 'No user signed in.');
+    }
+    final doc = await _db
+        .collection('users')
+        .doc(uid)
+        .collection('journalEntries')
+        .doc(entryId)
+        .get();
+    if (!doc.exists) return null;
+    return doc.data();
+  }
 }

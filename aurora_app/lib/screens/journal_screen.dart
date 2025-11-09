@@ -1,4 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -40,6 +39,7 @@ class _JournalScreenState extends State<JournalScreen> {
         content: _contentController.text,
         mood: _selectedMood,
       );
+      if (!mounted) return;
       _titleController.clear();
       _contentController.clear();
       setState(() => _selectedMood = 'neutral');
@@ -47,6 +47,7 @@ class _JournalScreenState extends State<JournalScreen> {
         const SnackBar(content: Text('Journal entry saved! 📝')),
       );
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error saving entry: $e')),
       );
@@ -94,9 +95,9 @@ class _JournalScreenState extends State<JournalScreen> {
                           hintText: 'Grateful for today...',
                         ),
                         const SizedBox(height: 12),
-                        Text(
+                        const Text(
                           'Mood',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
                             color: Color(0xFF6F6C66),
                           ),

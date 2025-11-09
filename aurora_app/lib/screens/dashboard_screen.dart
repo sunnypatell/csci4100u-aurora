@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/auth_service.dart';
 import 'settings_screen.dart';
+import 'journal_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -17,7 +18,10 @@ class DashboardScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFFF5EFE7),
         elevation: 0,
-        title: const Text('Dashboard', style: TextStyle(color: Color(0xFF2F2E2C))),
+        title: const Text(
+          'Dashboard',
+          style: TextStyle(color: Color(0xFF2F2E2C)),
+        ),
         actions: [
           IconButton(
             tooltip: 'Settings',
@@ -58,11 +62,16 @@ class DashboardScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 if (uid != null)
                   StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                    stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
+                    stream: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(uid)
+                        .snapshots(),
                     builder: (context, snapshot) {
                       final data = snapshot.data?.data();
-                      final displayName = (data?['displayName'] as String?)?.trim();
-                      final fallbackName = (data?['fullName'] as String?)?.trim();
+                      final displayName =
+                          (data?['displayName'] as String?)?.trim();
+                      final fallbackName =
+                          (data?['fullName'] as String?)?.trim();
                       final candidates = <String?>[
                         displayName,
                         fallbackName,
@@ -70,7 +79,10 @@ class DashboardScreen extends StatelessWidget {
                         user?.email,
                         'User',
                       ];
-                      final nameToShow = candidates.firstWhere((v) => v != null && v.isNotEmpty, orElse: () => 'User')!;
+                      final nameToShow = candidates.firstWhere(
+                        (v) => v != null && v.isNotEmpty,
+                        orElse: () => 'User',
+                      )!;
                       return Text(
                         'Welcome, $nameToShow',
                         textAlign: TextAlign.center,
@@ -83,7 +95,37 @@ class DashboardScreen extends StatelessWidget {
                     },
                   )
                 else
-                  const Text('Welcome')
+                  const Text('Welcome'),
+                const SizedBox(height: 28),
+                // Journal button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const JournalScreen(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF2B8A0),
+                      foregroundColor: const Color(0xFF2F2E2C),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Open Journal',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

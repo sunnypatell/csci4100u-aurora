@@ -61,6 +61,18 @@ class _JournalScreenState extends State<JournalScreen> {
     return DateFormat('MMM d, y • h:mm a').format(local);
   }
 
+  // Reusable mood item widget for dropdowns (emoji + label)
+  static Widget _moodItem(String emoji, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(emoji, style: const TextStyle(fontSize: 16)),
+        const SizedBox(width: 8),
+        Text(label),
+      ],
+    );
+  }
+
   @override
   void dispose() {
     _titleController.dispose();
@@ -118,9 +130,14 @@ class _JournalScreenState extends State<JournalScreen> {
         ),
         iconTheme: const IconThemeData(color: Color(0xFF2F2E2C)),
       ),
+      resizeToAvoidBottomInset: true,
       body: user == null
           ? const Center(child: Text('Please sign in to view your journal'))
-          : Column(
+          : SafeArea(
+              child: SingleChildScrollView(
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 24),
+                child: Column(
               children: [
                 // input card
                 Padding(
@@ -170,16 +187,16 @@ class _JournalScreenState extends State<JournalScreen> {
                             contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 12),
                           ),
-                          items: const [
-                            DropdownMenuItem(value: 'neutral', child: Text('Neutral')),
-                            DropdownMenuItem(value: 'happy', child: Text('Happy')),
-                            DropdownMenuItem(value: 'sad', child: Text('Sad')),
-                            DropdownMenuItem(value: 'anxious', child: Text('Anxious')),
-                            DropdownMenuItem(value: 'angry', child: Text('Angry')),
-                            DropdownMenuItem(value: 'excited', child: Text('Excited')),
-                            DropdownMenuItem(value: 'calm', child: Text('Calm')),
-                            DropdownMenuItem(value: 'tired', child: Text('Tired')),
-                            DropdownMenuItem(value: 'grateful', child: Text('Grateful')),
+                          items: [
+                            DropdownMenuItem(value: 'neutral', child: _moodItem('😐','Neutral')),
+                            DropdownMenuItem(value: 'happy', child: _moodItem('😊','Happy')),
+                            DropdownMenuItem(value: 'sad', child: _moodItem('😢','Sad')),
+                            DropdownMenuItem(value: 'anxious', child: _moodItem('😰','Anxious')),
+                            DropdownMenuItem(value: 'angry', child: _moodItem('😠','Angry')),
+                            DropdownMenuItem(value: 'excited', child: _moodItem('🤩','Excited')),
+                            DropdownMenuItem(value: 'calm', child: _moodItem('😌','Calm')),
+                            DropdownMenuItem(value: 'tired', child: _moodItem('🥱','Tired')),
+                            DropdownMenuItem(value: 'grateful', child: _moodItem('🙏','Grateful')),
                           ],
                           onChanged: (val) {
                             if (val != null) {
@@ -294,17 +311,17 @@ class _JournalScreenState extends State<JournalScreen> {
                               ),
                               child: DropdownButton<String>(
                                 value: _filterMood,
-                                items: const [
-                                  DropdownMenuItem(value: 'all', child: Text('All')),
-                                  DropdownMenuItem(value: 'happy', child: Text('Happy')),
-                                  DropdownMenuItem(value: 'sad', child: Text('Sad')),
-                                  DropdownMenuItem(value: 'anxious', child: Text('Anxious')),
-                                  DropdownMenuItem(value: 'angry', child: Text('Angry')),
-                                  DropdownMenuItem(value: 'excited', child: Text('Excited')),
-                                  DropdownMenuItem(value: 'calm', child: Text('Calm')),
-                                  DropdownMenuItem(value: 'tired', child: Text('Tired')),
-                                  DropdownMenuItem(value: 'grateful', child: Text('Grateful')),
-                                  DropdownMenuItem(value: 'neutral', child: Text('Neutral')),
+                                items: [
+                                  DropdownMenuItem(value: 'all', child: _moodItem('🌐','All')),
+                                  DropdownMenuItem(value: 'happy', child: _moodItem('😊','Happy')),
+                                  DropdownMenuItem(value: 'sad', child: _moodItem('😢','Sad')),
+                                  DropdownMenuItem(value: 'anxious', child: _moodItem('😰','Anxious')),
+                                  DropdownMenuItem(value: 'angry', child: _moodItem('😠','Angry')),
+                                  DropdownMenuItem(value: 'excited', child: _moodItem('🤩','Excited')),
+                                  DropdownMenuItem(value: 'calm', child: _moodItem('😌','Calm')),
+                                  DropdownMenuItem(value: 'tired', child: _moodItem('🥱','Tired')),
+                                  DropdownMenuItem(value: 'grateful', child: _moodItem('🙏','Grateful')),
+                                  DropdownMenuItem(value: 'neutral', child: _moodItem('😐','Neutral')),
                                 ],
                                 onChanged: (v) => setState(() => _filterMood = v ?? 'all'),
                               ),
@@ -316,14 +333,16 @@ class _JournalScreenState extends State<JournalScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Expanded(
-                  child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                // Entire page scrolls; list is non-scrollable inside
+                StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                     stream: JournalService.instance.journalEntriesStream(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState ==
                           ConnectionState.waiting) {
-                        return const Center(
-                            child: CircularProgressIndicator());
+                        return const Padding(
+                          padding: EdgeInsets.only(top: 24.0, bottom: 40.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
                       }
                       List<QueryDocumentSnapshot<Map<String, dynamic>>> docs = snapshot.data?.docs ?? [];
 
@@ -351,6 +370,8 @@ class _JournalScreenState extends State<JournalScreen> {
                         padding: const EdgeInsets.all(16),
                         itemCount: docs.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
                         itemBuilder: (context, index) {
                           final doc = docs[index];
                           final data = doc.data();
@@ -459,9 +480,10 @@ class _JournalScreenState extends State<JournalScreen> {
                       );
                     },
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
+          ),
     );
   }
 
@@ -529,11 +551,16 @@ class _JournalScreenState extends State<JournalScreen> {
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                 ),
-                items: const [
-                  DropdownMenuItem(value: 'neutral', child: Text('Neutral')),
-                  DropdownMenuItem(value: 'happy', child: Text('Happy')),
-                  DropdownMenuItem(value: 'sad', child: Text('Sad')),
-                  DropdownMenuItem(value: 'anxious', child: Text('Anxious')),
+                items: [
+                  DropdownMenuItem(value: 'neutral', child: _moodItem('😐','Neutral')),
+                  DropdownMenuItem(value: 'happy', child: _moodItem('😊','Happy')),
+                  DropdownMenuItem(value: 'sad', child: _moodItem('😢','Sad')),
+                  DropdownMenuItem(value: 'anxious', child: _moodItem('😰','Anxious')),
+                  DropdownMenuItem(value: 'angry', child: _moodItem('😠','Angry')),
+                  DropdownMenuItem(value: 'excited', child: _moodItem('🤩','Excited')),
+                  DropdownMenuItem(value: 'calm', child: _moodItem('😌','Calm')),
+                  DropdownMenuItem(value: 'tired', child: _moodItem('🥱','Tired')),
+                  DropdownMenuItem(value: 'grateful', child: _moodItem('🙏','Grateful')),
                 ],
                 onChanged: (val) => mood = val ?? 'neutral',
               ),
@@ -542,6 +569,9 @@ class _JournalScreenState extends State<JournalScreen> {
                 controller: contentCtrl,
                 label: 'Entry',
                 hintText: 'Update your thoughts...',
+                keyboardType: TextInputType.multiline,
+                minLines: 5,
+                maxLines: 12,
               ),
               const SizedBox(height: 16),
               SizedBox(

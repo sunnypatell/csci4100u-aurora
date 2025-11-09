@@ -30,7 +30,7 @@ Early prototype: core authentication, user profile storage, and primary UI flows
 
 ### Contributor: Sunny Patel (100867748)
 
-Sunny has implemented the foundational infrastructure portions of the application, including Firebase initialization, authentication flows, user data modeling, secure profile updates, and the custom UI components for auth and onboarding.
+Sunny has implemented the foundational infrastructure portions of the application, including Firebase initialization, authentication flows, user data modeling, secure profile updates, and the custom UI components for auth and onboarding. For the Journals feature, Sunny connected it to Firestore using per‑user (UID) paths and a nested collection /users/journalEntries/{...hash}; implemented the data aggregation/streaming logic.
 
 | Area | Description of Contribution | Key Files / Code | Notes |
 |------|-----------------------------|------------------|-------|

@@ -15,14 +15,21 @@ class JournalScreen extends StatefulWidget {
 class _JournalScreenState extends State<JournalScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
+  final _searchController = TextEditingController();
   String _selectedMood = 'neutral';
   bool _isSaving = false;
+  String _filterMood = 'all';
 
   // Moods -> emoji + color for pill background
   static const Map<String, String> _moodEmoji = {
     'happy': '😊',
     'sad': '😢',
     'anxious': '😰',
+    'angry': '😠',
+    'excited': '🤩',
+    'calm': '😌',
+    'tired': '🥱',
+    'grateful': '🙏',
     'neutral': '😐',
   };
 
@@ -58,6 +65,7 @@ class _JournalScreenState extends State<JournalScreen> {
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -130,6 +138,7 @@ class _JournalScreenState extends State<JournalScreen> {
                           controller: _titleController,
                           label: 'Title',
                           hintText: 'Grateful for today...',
+                          textCapitalization: TextCapitalization.sentences,
                         ),
                         const SizedBox(height: 12),
                         const Text(
@@ -162,22 +171,15 @@ class _JournalScreenState extends State<JournalScreen> {
                                 const EdgeInsets.symmetric(horizontal: 12),
                           ),
                           items: const [
-                            DropdownMenuItem(
-                              value: 'neutral',
-                              child: Text('Neutral'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'happy',
-                              child: Text('Happy'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'sad',
-                              child: Text('Sad'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'anxious',
-                              child: Text('Anxious'),
-                            ),
+                            DropdownMenuItem(value: 'neutral', child: Text('Neutral')),
+                            DropdownMenuItem(value: 'happy', child: Text('Happy')),
+                            DropdownMenuItem(value: 'sad', child: Text('Sad')),
+                            DropdownMenuItem(value: 'anxious', child: Text('Anxious')),
+                            DropdownMenuItem(value: 'angry', child: Text('Angry')),
+                            DropdownMenuItem(value: 'excited', child: Text('Excited')),
+                            DropdownMenuItem(value: 'calm', child: Text('Calm')),
+                            DropdownMenuItem(value: 'tired', child: Text('Tired')),
+                            DropdownMenuItem(value: 'grateful', child: Text('Grateful')),
                           ],
                           onChanged: (val) {
                             if (val != null) {
@@ -190,6 +192,10 @@ class _JournalScreenState extends State<JournalScreen> {
                           controller: _contentController,
                           label: 'Entry',
                           hintText: 'Write about your day, thoughts, feelings...',
+                          keyboardType: TextInputType.multiline,
+                          textCapitalization: TextCapitalization.sentences,
+                          minLines: 5,
+                          maxLines: 12,
                           validator: null,
                         ),
                         const SizedBox(height: 16),
@@ -229,18 +235,84 @@ class _JournalScreenState extends State<JournalScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Your entries',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF2F2E2C),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Your entries',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2F2E2C),
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 10),
+                      // Search and filter row
+                      Row(
+                        children: [
+                          // Search by title
+                          Expanded(
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: (_) => setState(() {}),
+                              decoration: InputDecoration(
+                                hintText: 'Search by title…',
+                                prefixIcon: const Icon(Icons.search),
+                                suffixIcon: _searchController.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: const Icon(Icons.clear),
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          setState(() {});
+                                        },
+                                      )
+                                    : null,
+                                filled: true,
+                                fillColor: Colors.white,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          // Mood filter dropdown
+                          DropdownButtonHideUnderline(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFE8E4DC)),
+                              ),
+                              child: DropdownButton<String>(
+                                value: _filterMood,
+                                items: const [
+                                  DropdownMenuItem(value: 'all', child: Text('All')),
+                                  DropdownMenuItem(value: 'happy', child: Text('Happy')),
+                                  DropdownMenuItem(value: 'sad', child: Text('Sad')),
+                                  DropdownMenuItem(value: 'anxious', child: Text('Anxious')),
+                                  DropdownMenuItem(value: 'angry', child: Text('Angry')),
+                                  DropdownMenuItem(value: 'excited', child: Text('Excited')),
+                                  DropdownMenuItem(value: 'calm', child: Text('Calm')),
+                                  DropdownMenuItem(value: 'tired', child: Text('Tired')),
+                                  DropdownMenuItem(value: 'grateful', child: Text('Grateful')),
+                                  DropdownMenuItem(value: 'neutral', child: Text('Neutral')),
+                                ],
+                                onChanged: (v) => setState(() => _filterMood = v ?? 'all'),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -253,7 +325,20 @@ class _JournalScreenState extends State<JournalScreen> {
                         return const Center(
                             child: CircularProgressIndicator());
                       }
-                      final docs = snapshot.data?.docs ?? [];
+                      List<QueryDocumentSnapshot<Map<String, dynamic>>> docs = snapshot.data?.docs ?? [];
+
+                      // Client-side filtering: by mood and title search
+                      final q = _searchController.text.trim().toLowerCase();
+                      if (_filterMood != 'all') {
+                        docs = docs.where((d) => (d.data()['mood'] ?? 'neutral') == _filterMood).toList();
+                      }
+                      if (q.isNotEmpty) {
+                        docs = docs.where((d) {
+                          final title = (d.data()['title'] ?? '').toString().toLowerCase();
+                          return title.contains(q);
+                        }).toList();
+                      }
+
                       if (docs.isEmpty) {
                         return const Center(
                           child: Text(
@@ -352,6 +437,8 @@ class _JournalScreenState extends State<JournalScreen> {
                                       fontSize: 13.5,
                                       color: Color(0xFF6F6C66),
                                     ),
+                                    maxLines: 6,
+                                    overflow: TextOverflow.fade,
                                   ),
                                   if (created != null) ...[
                                     const SizedBox(height: 8),

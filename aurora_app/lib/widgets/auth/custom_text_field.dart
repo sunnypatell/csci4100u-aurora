@@ -10,6 +10,10 @@ class CustomTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final TextCapitalization textCapitalization;
   final ValueChanged<String>? onChanged;
+  final int? minLines;
+  final int? maxLines;
+  final bool expands;
+  final TextInputAction? textInputAction;
 
   const CustomTextField({
     super.key,
@@ -22,6 +26,10 @@ class CustomTextField extends StatelessWidget {
     this.validator,
     this.textCapitalization = TextCapitalization.none,
     this.onChanged,
+    this.minLines,
+    this.maxLines,
+    this.expands = false,
+    this.textInputAction,
   });
 
   @override
@@ -46,6 +54,10 @@ class CustomTextField extends StatelessWidget {
           textCapitalization: textCapitalization,
           onChanged: onChanged,
           validator: validator,
+          minLines: expands ? null : minLines,
+          maxLines: expands ? null : (maxLines ?? (obscureText ? 1 : 1)),
+          expands: expands,
+          textInputAction: textInputAction,
           style: const TextStyle(
             fontSize: 16,
             color: Color(0xFF2F2E2C),

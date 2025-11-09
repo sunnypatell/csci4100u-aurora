@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'screens/landing_screen.dart';
-import 'screens/home_screen.dart';
+// import 'screens/auth/login_screen.dart'; // not needed when Landing is the unauthenticated start
+import 'screens/dashboard_screen.dart';
 import 'services/auth_service.dart';
 
 Future<void> main() async {
@@ -49,12 +50,11 @@ class _AuthGate extends StatelessWidget {
           );
         }
 
-        // If signed in, go to home, else show landing/login flow
+        // If signed in, show dashboard. If not, show landing page (user can proceed to login/signup).
         if (snapshot.hasData) {
-          return const HomeScreen();
-        } else {
-          return const LandingScreen();
+          return const DashboardScreen();
         }
+        return const LandingScreen();
       },
     );
   }

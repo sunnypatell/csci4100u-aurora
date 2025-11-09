@@ -19,6 +19,36 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  double _strength = 0; // 0..1
+  String _strengthLabel = 'Too weak';
+
+  static final _specialCharReg = RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-]');
+  static final _upperReg = RegExp(r'[A-Z]');
+
+  void _evaluatePassword(String value) {
+    int score = 0;
+    if (value.length >= 8) score++;
+    if (_upperReg.hasMatch(value)) score++;
+    if (_specialCharReg.hasMatch(value)) score++;
+    if (value.length >= 12) score++; // bonus length
+    _strength = score / 4.0;
+    switch (score) {
+      case 0:
+      case 1:
+        _strengthLabel = 'Weak';
+        break;
+      case 2:
+        _strengthLabel = 'Fair';
+        break;
+      case 3:
+        _strengthLabel = 'Good';
+        break;
+      case 4:
+        _strengthLabel = 'Strong';
+        break;
+    }
+    setState(() {});
+  }
 
   @override
   void dispose() {
@@ -44,7 +74,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
       Navigator.pop(context); // Back to login
     } catch (e) {
-      final msg = AuthService.instance.mapAuthError(e is Exception ? e : Exception(e.toString()));
+      final msg = AuthService.instance.mapAuthError(e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(msg)),
@@ -156,16 +186,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         setState(() => _obscurePassword = !_obscurePassword);
                       },
                     ),
+                    onChanged: _evaluatePassword,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter a password';
                       }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+                      if (value.length < 8) {
+                        return 'Min 8 characters';
+                      }
+                      if (!_upperReg.hasMatch(value)) {
+                        return 'Need at least one uppercase letter';
+                      }
+                      if (!_specialCharReg.hasMatch(value)) {
+                        return 'Need at least one special character';
                       }
                       return null;
                     },
                   ),
+
+                  const SizedBox(height: 12),
+                  _PasswordStrengthBar(strength: _strength, label: _strengthLabel),
                   
                   const SizedBox(height: 24),
                   
@@ -243,6 +283,53 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PasswordStrengthBar extends StatelessWidget {
+  final double strength; // 0..1
+  final String label;
+  const _PasswordStrengthBar({required this.strength, required this.label});
+
+  Color _color() {
+    if (strength < 0.25) return const Color(0xFFF2B8A0); // weak
+    if (strength < 0.5) return const Color(0xFFF5C97B); // fair
+    if (strength < 0.75) return const Color(0xFFA6C0B5); // good
+    return const Color(0xFF8BBF9F); // strong
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: Container(
+            height: 10,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8E4DC),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: FractionallySizedBox(
+              alignment: Alignment.centerLeft,
+              widthFactor: strength.clamp(0, 1),
+              child: Container(color: _color()),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Strength: $label',
+          style: const TextStyle(fontSize: 12, color: Color(0xFF6F6C66)),
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Password must be ≥8 chars, include 1 uppercase & 1 special character.',
+          style: TextStyle(fontSize: 11, color: Color(0xFF6F6C66)),
+        )
+      ],
     );
   }
 }

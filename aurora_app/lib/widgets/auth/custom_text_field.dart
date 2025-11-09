@@ -9,6 +9,7 @@ class CustomTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
   final TextCapitalization textCapitalization;
+  final ValueChanged<String>? onChanged;
 
   const CustomTextField({
     super.key,
@@ -20,6 +21,7 @@ class CustomTextField extends StatelessWidget {
     this.suffixIcon,
     this.validator,
     this.textCapitalization = TextCapitalization.none,
+    this.onChanged,
   });
 
   @override
@@ -42,6 +44,7 @@ class CustomTextField extends StatelessWidget {
           obscureText: obscureText,
           keyboardType: keyboardType,
           textCapitalization: textCapitalization,
+          onChanged: onChanged,
           validator: validator,
           style: const TextStyle(
             fontSize: 16,

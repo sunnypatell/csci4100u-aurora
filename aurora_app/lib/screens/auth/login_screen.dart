@@ -38,9 +38,10 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Signed in successfully')),
       );
-      // TODO: Navigate to dashboard after implementation
+      // AuthGate will rebuild to Dashboard automatically; just pop back to root.
+      Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (e) {
-      final msg = AuthService.instance.mapAuthError(e is Exception ? e : Exception(e.toString()));
+      final msg = AuthService.instance.mapAuthError(e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(msg)),
@@ -68,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
-      final msg = AuthService.instance.mapAuthError(e is Exception ? e : Exception(e.toString()));
+      final msg = AuthService.instance.mapAuthError(e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(msg)),

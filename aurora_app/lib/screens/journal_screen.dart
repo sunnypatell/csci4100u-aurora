@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import '../services/journal_service.dart';
 import '../widgets/auth/custom_text_field.dart';
 
@@ -16,6 +17,42 @@ class _JournalScreenState extends State<JournalScreen> {
   final _contentController = TextEditingController();
   String _selectedMood = 'neutral';
   bool _isSaving = false;
+
+  // Moods -> emoji + color for pill background
+  static const Map<String, String> _moodEmoji = {
+    'happy': '😊',
+    'sad': '😢',
+    'anxious': '😰',
+    'neutral': '😐',
+  };
+
+  Color _moodColor(String mood) {
+    switch (mood) {
+      case 'happy':
+        return const Color(0xFFFFF4CC); // warm yellow
+      case 'sad':
+        return const Color(0xFFE6F0FF); // soft blue
+      case 'anxious':
+        return const Color(0xFFEFF6F4); // mint/teal tint
+      default:
+        return const Color(0xFFF5EFE7); // neutral beige used in theme
+    }
+  }
+
+  String _formatWhen(DateTime when) {
+    final now = DateTime.now();
+    final local = when.toLocal();
+    final isSameDay = now.year == local.year && now.month == local.month && now.day == local.day;
+    final yesterday = now.subtract(const Duration(days: 1));
+    final isYesterday = yesterday.year == local.year && yesterday.month == local.month && yesterday.day == local.day;
+
+    if (isSameDay) {
+      return 'Today • ${DateFormat('h:mm a').format(local)}';
+    } else if (isYesterday) {
+      return 'Yesterday • ${DateFormat('h:mm a').format(local)}';
+    }
+    return DateFormat('MMM d, y • h:mm a').format(local);
+  }
 
   @override
   void dispose() {
@@ -256,7 +293,15 @@ class _JournalScreenState extends State<JournalScreen> {
                               ),
                               child: const Icon(Icons.delete, color: Colors.white),
                             ),
-                            child: Container(
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () => _showEditEntrySheet(
+                                entryId: doc.id,
+                                initialTitle: title,
+                                initialContent: content,
+                                initialMood: mood,
+                              ),
+                              child: Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
@@ -278,19 +323,24 @@ class _JournalScreenState extends State<JournalScreen> {
                                         ),
                                       ),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 10, vertical: 4),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFF5EFE7),
-                                          borderRadius:
-                                              BorderRadius.circular(999),
+                                          color: _moodColor(mood),
+                                          borderRadius: BorderRadius.circular(999),
                                         ),
-                                        child: Text(
-                                          mood,
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF2F2E2C),
-                                          ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(_moodEmoji[mood] ?? '🙂', style: const TextStyle(fontSize: 12)),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              mood,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Color(0xFF2F2E2C),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
@@ -306,7 +356,7 @@ class _JournalScreenState extends State<JournalScreen> {
                                   if (created != null) ...[
                                     const SizedBox(height: 8),
                                     Text(
-                                      '${created.toLocal()}',
+                                      _formatWhen(created),
                                       style: const TextStyle(
                                         fontSize: 11,
                                         color: Color(0xFF9C9A96),
@@ -314,6 +364,7 @@ class _JournalScreenState extends State<JournalScreen> {
                                     ),
                                   ]
                                 ],
+                              ),
                               ),
                             ),
                           );
@@ -324,6 +375,119 @@ class _JournalScreenState extends State<JournalScreen> {
                 ),
               ],
             ),
+    );
+  }
+
+  Future<void> _showEditEntrySheet({
+    required String entryId,
+    required String initialTitle,
+    required String initialContent,
+    required String initialMood,
+  }) async {
+    final titleCtrl = TextEditingController(text: initialTitle);
+    final contentCtrl = TextEditingController(text: initialContent);
+    String mood = initialMood;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Edit entry',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2F2E2C),
+                ),
+              ),
+              const SizedBox(height: 12),
+              CustomTextField(
+                controller: titleCtrl,
+                label: 'Title',
+                hintText: 'Untitled entry',
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Mood',
+                style: TextStyle(fontSize: 14, color: Color(0xFF6F6C66)),
+              ),
+              const SizedBox(height: 6),
+              DropdownButtonFormField<String>(
+                value: mood,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: const Color(0xFFF5EFE7),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFF2B8A0)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFF2B8A0), width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'neutral', child: Text('Neutral')),
+                  DropdownMenuItem(value: 'happy', child: Text('Happy')),
+                  DropdownMenuItem(value: 'sad', child: Text('Sad')),
+                  DropdownMenuItem(value: 'anxious', child: Text('Anxious')),
+                ],
+                onChanged: (val) => mood = val ?? 'neutral',
+              ),
+              const SizedBox(height: 12),
+              CustomTextField(
+                controller: contentCtrl,
+                label: 'Entry',
+                hintText: 'Update your thoughts...',
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF2B8A0),
+                    foregroundColor: const Color(0xFF2F2E2C),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: () async {
+                    // Close the sheet first to avoid using a context after await
+                    if (Navigator.canPop(ctx)) Navigator.of(ctx).pop();
+                    await JournalService.instance.updateEntry(
+                      entryId,
+                      title: titleCtrl.text,
+                      content: contentCtrl.text,
+                      mood: mood,
+                    );
+                  },
+                  child: const Text(
+                    'Save changes',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              )
+            ],
+          ),
+        );
+      },
     );
   }
 }

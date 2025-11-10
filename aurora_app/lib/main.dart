@@ -5,6 +5,7 @@ import 'screens/landing_screen.dart';
 // import 'screens/auth/login_screen.dart'; // not needed when Landing is the unauthenticated start
 import 'screens/dashboard_screen.dart';
 import 'services/auth_service.dart';
+import 'services/notifications_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,6 +13,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await NotificationService.instance.init();
   runApp(const AuroraApp());
 }
 

@@ -21,7 +21,7 @@ class _JournalScreenState extends State<JournalScreen> {
   bool _isSaving = false;
   String _filterMood = 'all';
 
-  // NEW: 0 = entries (your current layout), 1 = timeline
+  
   int _currentTab = 0;
 
   // Moods -> emoji + color for pill background

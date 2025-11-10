@@ -39,7 +39,7 @@ class TimelineTab extends StatelessWidget {
 
         final docs = snapshot.data?.docs ?? [];
 
-        // 1) group by date for the list (what you already had)
+        // 1) group by date for the list
         final Map<String,
             List<QueryDocumentSnapshot<Map<String, dynamic>>>> grouped = {};
         for (final doc in docs) {

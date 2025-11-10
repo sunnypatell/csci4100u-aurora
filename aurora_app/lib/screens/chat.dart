@@ -82,25 +82,25 @@ class _ChatsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      _ChatPreview(
+      const _ChatPreview(
         name: 'Aanya',
         lastMessage: 'See you at 6 for yoga! 🙌',
         time: '5:42 PM',
         color: Colors.teal,
       ),
-      _ChatPreview(
+      const _ChatPreview(
         name: 'Samir',
         lastMessage: 'Shared a breathing exercise link',
         time: '4:11 PM',
         color: Colors.indigo,
       ),
-      _ChatPreview(
+      const _ChatPreview(
         name: 'Josiah',
         lastMessage: 'Can you review the journal UI?',
         time: 'Yesterday',
         color: Colors.orange,
       ),
-      _ChatPreview(
+      const _ChatPreview(
         name: 'Daniyal',
         lastMessage: 'Group coloring tonight?',
         time: 'Yesterday',

@@ -402,10 +402,10 @@ class EatingDisordersHelpPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _SimpleHelpScaffold(
+    return const _SimpleHelpScaffold(
       title: "Eating Disorders",
       emoji: "🥣",
-      bullets: const [
+  bullets: [
         "Gentle meal-time prompts and self-compassion notes.",
         "Normalize small wins; progress isn’t linear.",
         "Crisis support and professional help options.",
@@ -420,10 +420,10 @@ class ADHDHelpPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _SimpleHelpScaffold(
+    return const _SimpleHelpScaffold(
       title: "ADHD Help",
       emoji: "🧠",
-      bullets: const [
+  bullets: [
         "Two-minute start: pick one tiny action and begin.",
         "Body-double timer and noise options.",
         "Task-break-reward cycles and routine builders.",
@@ -438,10 +438,10 @@ class AnxietyDepressionHelpPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _SimpleHelpScaffold(
+    return const _SimpleHelpScaffold(
       title: "Anxiety & Depression",
       emoji: "🌊",
-      bullets: const [
+  bullets: [
         "Grounding (5-4-3-2-1) & calm breathing guides.",
         "Friendly journaling prompts and mood check-ins.",
         "When to reach out—hotlines and campus/community care.",
@@ -456,10 +456,10 @@ class OtherSupportsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _SimpleHelpScaffold(
+    return const _SimpleHelpScaffold(
       title: "More Supports",
       emoji: "🧩",
-      bullets: const [
+  bullets: [
         "Study stress, sleep, grief, substance use resources.",
         "Music & nature soundscapes for quick reset.",
         "Community groups, peer listeners, and text lines.",

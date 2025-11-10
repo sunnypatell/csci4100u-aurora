@@ -54,7 +54,7 @@ class DashboardScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Text(
-                  'Placeholder dashboard (Auth test)',
+                  'Dashboard',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 22,
@@ -183,7 +183,7 @@ class DashboardScreen extends StatelessWidget {
                       elevation: 0,
                     ),
                     child: const Text(
-                      'Resources',
+                      'Help Near Me',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,

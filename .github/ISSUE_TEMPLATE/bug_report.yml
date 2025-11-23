@@ -1,0 +1,86 @@
+name: Bug Report
+description: File a detailed bug report to help us fix an issue.
+labels: [bug]
+title: "bug: <short description>"
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Provide as much detail as possible.
+  - type: input
+    id: area
+    attributes:
+      label: Affected Area
+      description: Screen, service, or module (e.g., journal_screen, auth_service).
+      placeholder: journal_screen
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Clear, concise description of the problem.
+      placeholder: When I tap save on a journal entry nothing happens...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: List precise steps.
+      placeholder: |
+        1. Go to Dashboard
+        2. Tap 'New Journal'
+        3. Enter text
+        4. Tap 'Save'
+        5. Observe no entry listed
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you thought would happen.
+      placeholder: Journal entry should appear in list instantly.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened.
+      placeholder: No error, no entry saved.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs / Stacktrace
+      description: Paste any output from console or debugger.
+      render: shell
+      placeholder: |
+        flutter run output or stacktrace
+    validations:
+      required: false
+  - type: input
+    id: flutter_version
+    attributes:
+      label: Flutter Version
+      description: Output of `flutter --version`.
+      placeholder: Flutter 3.x.x • channel stable
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-Submission Checklist
+      options:
+        - label: I have searched existing issues.
+          required: true
+        - label: I have run `flutter clean && flutter pub get`.
+          required: false
+        - label: I have reproduced on latest `main`.
+          required: true
+        - label: This is not a duplicate.
+          required: true

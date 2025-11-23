@@ -1,0 +1,43 @@
+name: Documentation
+description: Report missing, inaccurate, or unclear documentation.
+labels: [documentation]
+title: "docs: <short description>"
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us keep docs helpful and accurate.
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: File or section needing update.
+      placeholder: README.md > Quick Start
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: What's Wrong / Missing?
+      description: Describe the gap or error.
+      placeholder: Quick Start omits flutterfire configure step.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Improvement
+      description: Provide wording or structure ideas.
+      placeholder: Add step 4: Run `flutterfire configure` to generate firebase_options.dart
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-Submission Checklist
+      options:
+        - label: I verified this still applies on latest main.
+          required: true
+        - label: I can open a PR to fix.
+          required: false

@@ -1,0 +1,61 @@
+name: Feature Request
+description: Propose a new feature or enhancement.
+labels: [enhancement]
+title: "feat: <short description>"
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a feature! Help us understand the value.
+  - type: input
+    id: summary
+    attributes:
+      label: Short Summary
+      description: One sentence describing the enhancement.
+      placeholder: Add mood tracking to journal entries.
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation / Problem
+      description: What problem does this solve?
+      placeholder: Users want to reflect on emotional state attached to entries.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Outline how it might work (UI, data model, services).
+      placeholder: Add mood selector (1-5 scale) in journal entry form; store in Firestore in entries collection.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Other ideas or approaches you thought about.
+      placeholder: Use free-text tags; postpone until after analytics MVP.
+    validations:
+      required: false
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies / Impact
+      description: Any packages, schema changes, or migrations needed.
+      placeholder: Firestore document field addition; update analytics calculations.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-Submission Checklist
+      options:
+        - label: I have checked for existing similar feature requests.
+          required: true
+        - label: This aligns with mental wellness scope.
+          required: true
+        - label: I can help implement (optional).
+          required: false

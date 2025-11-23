@@ -1,0 +1,61 @@
+name: Improvement / Refactor
+description: Suggest code quality, performance, or architecture improvements.
+labels: [refactor]
+title: "refactor: <short description>"
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for non-feature changes enhancing maintainability.
+  - type: input
+    id: area
+    attributes:
+      label: Target Area
+      description: File, package, or subsystem.
+      placeholder: services/notifications_service.dart
+    validations:
+      required: true
+  - type: textarea
+    id: current_state
+    attributes:
+      label: Current State
+      description: Briefly describe how it works now.
+      placeholder: Notifications service mixes scheduling and UI toast logic.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_change
+    attributes:
+      label: Proposed Change
+      description: Outline new structure or approach.
+      placeholder: Split into scheduling_service + ui_feedback_widget; add interface for testability.
+    validations:
+      required: true
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Benefits
+      description: Expected impact (performance, readability, testability).
+      placeholder: Enables isolated unit tests; reduces widget rebuilds.
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks / Migration Steps
+      description: Potential downsides or required migrations.
+      placeholder: Must update imports in 3 screens; re-run integration tests.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-Submission Checklist
+      options:
+        - label: I checked no overlapping open refactor issue.
+          required: true
+        - label: Change keeps public API stable (if applicable).
+          required: false
+        - label: I can contribute implementation.
+          required: false

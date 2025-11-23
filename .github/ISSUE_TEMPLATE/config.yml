@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Project README
+    url: https://github.com/sunnypatell/csci4100u-aurora#readme
+    about: Review the README for setup & contribution guidance first.
+  - name: Flutter Documentation
+    url: https://docs.flutter.dev
+    about: Official Flutter docs for framework usage & troubleshooting.
+  - name: Firebase Console
+    url: https://console.firebase.google.com
+    about: Manage Firebase project services & credentials.

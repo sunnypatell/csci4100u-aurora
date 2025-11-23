@@ -190,7 +190,7 @@ class _ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surface = Colors.white.withOpacity(0.55);
+    final surface = Colors.white.withValues(alpha: 0.55);
     const border = Color(0x33000000);
 
     return TweenAnimationBuilder<double>(
@@ -249,7 +249,7 @@ class _ProfileCard extends StatelessWidget {
                               'Here’s your hub. Pick an action to get started.',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: DashboardScreen._text.withOpacity(0.7),
+                                color: DashboardScreen._text.withValues(alpha: 0.7),
                               ),
                             ),
                           ],
@@ -280,7 +280,7 @@ class _Skeleton extends StatelessWidget {
             width: width,
             height: 14,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.35),
+              color: Colors.white.withValues(alpha: 0.35),
               borderRadius: BorderRadius.circular(6),
             ),
           ),
@@ -305,7 +305,7 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surface = Colors.white.withOpacity(0.6);
+    final surface = Colors.white.withValues(alpha: 0.6);
     const border = Color(0x2F000000);
     final screenWidth = MediaQuery.sizeOf(context).width;
 
@@ -361,7 +361,7 @@ class _ActionTile extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       height: 1.2,
-                      color: DashboardScreen._text.withOpacity(0.72),
+                      color: DashboardScreen._text.withValues(alpha: 0.72),
                     ),
                   ),
                 ],

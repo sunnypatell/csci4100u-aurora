@@ -39,14 +39,13 @@ void showAuroraSnackBar(
   accent ??= _accentFor(variant);
   // Acquire overlay (prefer root for stability across routes).
   final overlay = Overlay.of(context, rootOverlay: true);
-  if (overlay == null) return;
   _overlayState = overlay;
 
   if (_currentAuroraSnack != null) {
-    _snackQueue.add(_QueuedSnack(message, icon!, accent!, duration));
+    _snackQueue.add(_QueuedSnack(message, icon, accent, duration));
     return;
   }
-  _displaySnack(_QueuedSnack(message, icon!, accent!, duration));
+  _displaySnack(_QueuedSnack(message, icon, accent, duration));
 }
 
 void _displaySnack(_QueuedSnack snack) {
@@ -129,7 +128,7 @@ class _AuroraSnackContent extends StatelessWidget {
         color: const Color(0xFFE9F5EE),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -159,7 +158,7 @@ class _AuroraSnackContent extends StatelessWidget {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: base.withOpacity(.12),
+                    color: base.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   padding: const EdgeInsets.all(6),

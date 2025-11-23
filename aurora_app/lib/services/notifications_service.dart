@@ -143,7 +143,7 @@ class NotificationService {
 
     const iosDetails = DarwinNotificationDetails();
 
-    final details = const NotificationDetails(
+    const details = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );
@@ -155,7 +155,7 @@ class NotificationService {
       title,
       body,
       scheduled,
-      details,
+        details,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
@@ -205,7 +205,7 @@ class NotificationService {
     if (!_initialized) await init();
     await requestPermissions();
     final tzTime = tz.TZDateTime.from(when, tz.local);
-    final details = const NotificationDetails(
+    const details = NotificationDetails(
       android: AndroidNotificationDetails(
         'one_off_channel',
         'One Off Notifications',

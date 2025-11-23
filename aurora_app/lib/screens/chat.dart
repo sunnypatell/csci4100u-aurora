@@ -285,8 +285,8 @@ class _ServerCard extends StatelessWidget {
               children: data.channels
                   .map((c) => Chip(
                         label: Text(c),
-                        backgroundColor: data.color.withOpacity(0.12),
-                        side: BorderSide(color: data.color.withOpacity(0.35)),
+                        backgroundColor: data.color.withValues(alpha: 0.12),
+                        side: BorderSide(color: data.color.withValues(alpha: 0.35)),
                       ))
                   .toList(),
             ),
@@ -535,15 +535,15 @@ class _SearchBar extends StatelessWidget {
           contentPadding: const EdgeInsets.symmetric(vertical: 12),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.black.withOpacity(0.08)),
+            borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.08)),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.black.withOpacity(0.08)),
+            borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.08)),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.black.withOpacity(0.20)),
+            borderSide: BorderSide(color: Colors.black.withValues(alpha: 0.20)),
           ),
         ),
       ),
@@ -561,12 +561,12 @@ class _Avatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return CircleAvatar(
       radius: 20,
-      backgroundColor: color.withOpacity(0.18),
+      backgroundColor: color.withValues(alpha: 0.18),
       child: Text(
         initials,
         style: TextStyle(
           fontWeight: FontWeight.w800,
-          color: color.withOpacity(0.95),
+          color: color.withValues(alpha: 0.95),
         ),
       ),
     );
@@ -596,9 +596,9 @@ class _MessageBubble extends StatelessWidget {
       bottomRight: Radius.circular(msg.mine ? 4 : 16),
     );
 
-    final bg = msg.mine ? color.withOpacity(0.15) : Colors.white;
+    final bg = msg.mine ? color.withValues(alpha: 0.15) : Colors.white;
     final border = Border.all(
-      color: (msg.mine ? color : Colors.black).withOpacity(0.15),
+      color: (msg.mine ? color : Colors.black).withValues(alpha: 0.15),
     );
 
     return Align(
@@ -622,7 +622,7 @@ class _MessageBubble extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 12,
-                  color: Colors.black.withOpacity(0.55),
+                  color: Colors.black.withValues(alpha: 0.55),
                 ),
               ),
               const SizedBox(height: 2),
@@ -632,10 +632,10 @@ class _MessageBubble extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.favorite_border_rounded,
-                      size: 16, color: Colors.black.withOpacity(0.45)),
+                      size: 16, color: Colors.black.withValues(alpha: 0.45)),
                   const SizedBox(width: 8),
                   Icon(Icons.emoji_emotions_outlined,
-                      size: 16, color: Colors.black.withOpacity(0.45)),
+                      size: 16, color: Colors.black.withValues(alpha: 0.45)),
                 ],
               )
             ],
@@ -659,7 +659,7 @@ class _TypingBar extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border(
-            top: BorderSide(color: Colors.black.withOpacity(0.07)),
+            top: BorderSide(color: Colors.black.withValues(alpha: 0.07)),
           ),
         ),
         child: Row(
@@ -682,17 +682,17 @@ class _TypingBar extends StatelessWidget {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(18),
                     borderSide:
-                        BorderSide(color: Colors.black.withOpacity(0.08)),
+                        BorderSide(color: Colors.black.withValues(alpha: 0.08)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(18),
                     borderSide:
-                        BorderSide(color: Colors.black.withOpacity(0.08)),
+                        BorderSide(color: Colors.black.withValues(alpha: 0.08)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(18),
                     borderSide:
-                        BorderSide(color: Colors.black.withOpacity(0.20)),
+                        BorderSide(color: Colors.black.withValues(alpha: 0.20)),
                   ),
                 ),
               ),
@@ -760,7 +760,7 @@ class _MembersSheet extends StatelessWidget {
                 separatorBuilder: (_, __) => const Divider(height: 1),
                 itemBuilder: (_, i) => ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: color.withOpacity(0.18),
+                    backgroundColor: color.withValues(alpha: 0.18),
                     child: Icon(members[i].$2, color: color),
                   ),
                   title: Text(members[i].$1),
@@ -797,7 +797,7 @@ class _CreateSheet extends StatelessWidget {
             const SizedBox(height: 12),
             ListTile(
               leading: CircleAvatar(
-                backgroundColor: cs.primary.withOpacity(0.12),
+                backgroundColor: cs.primary.withValues(alpha: 0.12),
                 child: const Icon(Icons.groups_rounded),
               ),
               title: const Text('Create a server'),
@@ -806,7 +806,7 @@ class _CreateSheet extends StatelessWidget {
             ),
             ListTile(
               leading: CircleAvatar(
-                backgroundColor: cs.tertiary.withOpacity(0.12),
+                backgroundColor: cs.tertiary.withValues(alpha: 0.12),
                 child: const Icon(Icons.link_rounded),
               ),
               title: const Text('Join with invite link'),

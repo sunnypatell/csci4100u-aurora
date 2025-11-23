@@ -89,8 +89,8 @@ class LandingScreen extends StatelessWidget {
             shape: BoxShape.circle,
             gradient: RadialGradient(
               colors: [
-                const Color(0xFFF5C97B).withOpacity(0.3),
-                const Color(0xFFF5C97B).withOpacity(0.0),
+                const Color(0xFFF5C97B).withValues(alpha: 0.3),
+                const Color(0xFFF5C97B).withValues(alpha: 0.0),
               ],
               stops: const [0.3, 1.0],
             ),
@@ -104,8 +104,8 @@ class LandingScreen extends StatelessWidget {
             shape: BoxShape.circle,
             gradient: RadialGradient(
               colors: [
-                const Color(0xFFF5C97B).withOpacity(0.5),
-                const Color(0xFFF5C97B).withOpacity(0.0),
+                const Color(0xFFF5C97B).withValues(alpha: 0.5),
+                const Color(0xFFF5C97B).withValues(alpha: 0.0),
               ],
               stops: const [0.4, 1.0],
             ),
@@ -120,7 +120,7 @@ class LandingScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(25),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFF5C97B).withOpacity(0.3),
+                color: const Color(0xFFF5C97B).withValues(alpha: 0.3),
                 blurRadius: 20,
                 spreadRadius: 5,
               ),

@@ -8,7 +8,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'screens/landing_screen.dart';
 // import 'screens/auth/login_screen.dart'; // not needed when Landing is the unauthenticated start
-import 'screens/dashboard_screen.dart';
 import 'screens/aurora_shell.dart';
 import 'services/auth_service.dart';
 import 'services/notifications_service.dart';

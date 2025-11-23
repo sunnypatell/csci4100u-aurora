@@ -199,7 +199,7 @@ class _MoodChartCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 12,
             offset: const Offset(0, 4),
           )
@@ -238,8 +238,8 @@ class _MoodChartCard extends StatelessWidget {
                   show: true,
                   drawHorizontalLine: true,
                   horizontalInterval: 1,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: const Color(0xFFEDE2D6),
+                  getDrawingHorizontalLine: (value) => const FlLine(
+                    color: Color(0xFFEDE2D6),
                     strokeWidth: 1,
                   ),
                   drawVerticalLine: false,
@@ -302,7 +302,7 @@ class _MoodChartCard extends StatelessWidget {
                         final isZero = spot.y == 0;
                         return FlDotCirclePainter(
                           radius: 3.5,
-                          color: isZero ? const Color(0xFF6F6C66).withOpacity(0.35) : const Color(0xFFF2B8A0),
+                          color: isZero ? const Color(0xFF6F6C66).withValues(alpha: 0.35) : const Color(0xFFF2B8A0),
                           strokeWidth: 0,
                         );
                       },
@@ -311,8 +311,8 @@ class _MoodChartCard extends StatelessWidget {
                       show: true,
                       gradient: LinearGradient(
                         colors: [
-                          const Color(0xFFF2B8A0).withOpacity(0.28),
-                          const Color(0xFFF5C97B).withOpacity(0.10),
+                          const Color(0xFFF2B8A0).withValues(alpha: 0.28),
+                          const Color(0xFFF5C97B).withValues(alpha: 0.10),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,

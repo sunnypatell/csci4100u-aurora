@@ -223,7 +223,7 @@ class _JournalScreenState extends State<JournalScreen> {
                     ),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<String>(
-                      value: _selectedMood,
+                      initialValue: _selectedMood,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: const Color(0xFFF5EFE7),
@@ -591,7 +591,7 @@ class _JournalScreenState extends State<JournalScreen> {
               ),
               const SizedBox(height: 6),
               DropdownButtonFormField<String>(
-                value: mood,
+                initialValue: mood,
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: const Color(0xFFF5EFE7),

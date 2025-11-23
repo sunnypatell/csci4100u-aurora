@@ -38,7 +38,7 @@ class HelpNearMePage extends StatelessWidget {
             ),
             alignment: Alignment.center,
             child: Container(
-              color: Colors.black.withOpacity(0.25),
+              color: Colors.black.withValues(alpha: 0.25),
               child: const Padding(
                 padding: EdgeInsets.all(8.0),
                 child: Text(
@@ -160,7 +160,7 @@ class _HelplineTile extends StatelessWidget {
       elevation: 0,
       margin: const EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: color.withOpacity(0.35),
+      color: color.withValues(alpha: 0.35),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

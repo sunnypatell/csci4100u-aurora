@@ -52,6 +52,7 @@ class _ResourcesPageState extends State<ResourcesPage>
         backgroundColor: const Color(0xFFF5EFE7),
         elevation: 0,
         centerTitle: true,
+        automaticallyImplyLeading: false,
         title: const Text(
           'Resources',
           style: TextStyle(
@@ -59,19 +60,21 @@ class _ResourcesPageState extends State<ResourcesPage>
             fontWeight: FontWeight.w700,
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: Color(0xFF2F2E2C)),
-          tooltip: 'Back to Dashboard',
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                    color: Color(0xFF2F2E2C)),
+                tooltip: 'Back',
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              colorScheme.surface.withOpacity(0.95),
-              colorScheme.surfaceContainerHighest.withOpacity(0.95),
+                  colorScheme.surface.withValues(alpha: 0.95),
+                      colorScheme.surfaceContainerHighest.withValues(alpha: 0.95),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -124,15 +127,15 @@ class _ResourcesPageState extends State<ResourcesPage>
                                     shape: BoxShape.circle,
                                     gradient: LinearGradient(
                                       colors: [
-                                        colorScheme.primary.withOpacity(0.28),
-                                        colorScheme.tertiary.withOpacity(0.28),
+                                            colorScheme.primary.withValues(alpha: 0.28),
+                                            colorScheme.tertiary.withValues(alpha: 0.28),
                                       ],
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: colorScheme.primary.withOpacity(0.18),
+                                        color: colorScheme.primary.withValues(alpha: 0.18),
                                         blurRadius: 12,
                                         spreadRadius: 2,
                                       ),
@@ -180,32 +183,32 @@ class _ResourcesPageState extends State<ResourcesPage>
                               title: "Eating Disorders",
                               subtitle: "Gentle guidance & support",
                               emoji: "🥣",
-                              gradientA: Colors.pink.shade200.withOpacity(0.35),
-                              gradientB: Colors.purple.shade200.withOpacity(0.35),
+                                  gradientA: Colors.pink.shade200.withValues(alpha: 0.35),
+                                  gradientB: Colors.purple.shade200.withValues(alpha: 0.35),
                               onTap: () => _open(context, const EatingDisordersHelpPage()),
                             ),
                             ResourceCard(
                               title: "ADHD Help",
                               subtitle: "Focus tools & coping tips",
                               emoji: "🧠",
-                              gradientA: Colors.blue.shade200.withOpacity(0.35),
-                              gradientB: Colors.green.shade200.withOpacity(0.35),
+                                  gradientA: Colors.blue.shade200.withValues(alpha: 0.35),
+                                  gradientB: Colors.green.shade200.withValues(alpha: 0.35),
                               onTap: () => _open(context, const ADHDHelpPage()),
                             ),
                             ResourceCard(
                               title: "Anxiety",
                               subtitle: "Grounding, calm, connection",
                               emoji: "🌊",
-                              gradientA: Colors.teal.shade200.withOpacity(0.35),
-                              gradientB: Colors.cyan.shade200.withOpacity(0.35),
+                                  gradientA: Colors.teal.shade200.withValues(alpha: 0.35),
+                                  gradientB: Colors.cyan.shade200.withValues(alpha: 0.35),
                               onTap: () => _open(context, const AnxietyDepressionHelpPage()),
                             ),
                             ResourceCard(
                               title: "More Supports",
                               subtitle: "Hotlines, journaling, music",
                               emoji: "🧩",
-                              gradientA: Colors.amber.shade200.withOpacity(0.35),
-                              gradientB: Colors.indigo.shade200.withOpacity(0.35),
+                                  gradientA: Colors.amber.shade200.withValues(alpha: 0.35),
+                                  gradientB: Colors.indigo.shade200.withValues(alpha: 0.35),
                               onTap: () => _open(context, const OtherSupportsPage()),
                             ),
                           ]),
@@ -273,9 +276,9 @@ class _TipChipState extends State<_TipChip> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: cs.surfaceContainerHighest.withOpacity(0.65),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: cs.outlineVariant.withOpacity(0.4)),
+            color: cs.surfaceContainerHighest.withValues(alpha: 0.65),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.4)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -351,12 +354,12 @@ class _ResourceCardState extends State<ResourceCard> {
                 end: Alignment.bottomRight,
               ),
               border: Border.all(
-                color: cs.outlineVariant.withOpacity(0.35),
+                color: cs.outlineVariant.withValues(alpha: 0.35),
               ),
               boxShadow: [
                 if (_hovering)
                   BoxShadow(
-                    color: cs.primary.withOpacity(0.12),
+                    color: cs.primary.withValues(alpha: 0.12),
                     blurRadius: 18,
                     spreadRadius: 1,
                     offset: const Offset(0, 8),
@@ -390,7 +393,7 @@ class _ResourceCardState extends State<ResourceCard> {
                   Text(
                     widget.subtitle,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: cs.onSurfaceVariant.withOpacity(0.85),
+                          color: cs.onSurfaceVariant.withValues(alpha: 0.85),
                         ),
                   ),
                   const SizedBox(height: 10),
@@ -438,15 +441,15 @@ class _QuoteCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
         ),
         child: loading
-            ? Row(
-                children: const [
+            ? const Row(
+                children: [
                   SizedBox(
                     height: 20,
                     width: 20,
@@ -619,9 +622,9 @@ class _SimpleHelpScaffold extends StatelessWidget {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: accent.withOpacity(0.12),
+              color: accent.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: accent.withOpacity(0.30)),
+              border: Border.all(color: accent.withValues(alpha: 0.30)),
             ),
             padding: const EdgeInsets.all(16),
             child: Column(

@@ -19,6 +19,9 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await NotificationService.instance.init();
+  await NotificationService.instance.requestPermissions();
+  // Schedule journal reminder if not already set (non-forced call).
+  await NotificationService.instance.scheduleDailyJournalReminder();
   runApp(const AuroraApp());
 }
 

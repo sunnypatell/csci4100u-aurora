@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import '../services/journal_service.dart';
 import '../widgets/auth/custom_text_field.dart';
 import '../widgets/aurora_snackbar.dart';
+import '../services/notifications_service.dart';
 import 'timeline_tab.dart';
 
 class JournalScreen extends StatefulWidget {
@@ -114,6 +115,8 @@ class _JournalScreenState extends State<JournalScreen> {
       _contentController.clear();
       setState(() => _selectedMood = 'neutral');
       showAuroraSnackBar(context, 'Journal entry saved! 📝', variant: AuroraSnackVariant.success);
+      // Ensure a daily reminder exists; non-forced call avoids duplication.
+      await NotificationService.instance.scheduleDailyJournalReminder();
     } catch (e) {
       if (!mounted) return;
       showAuroraSnackBar(context, 'Error saving entry: $e', variant: AuroraSnackVariant.error);

@@ -1,4 +1,4 @@
-name: Flutter Analyze & Test
+name: Flutter Analyze CI
 
 on:
   push:

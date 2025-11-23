@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+/// JournalScreen
+/// Provides a multi-tab journaling interface: compose entries with mood tags,
+/// search/filter existing entries, and visualize mood trends (timeline tab).
+/// Entries are stored per-user in Firestore via JournalService. UX focuses on
+/// low friction: minimal required fields, emoji mood quick picks, and date
+/// formatting helpers for human-friendly “Today / Yesterday” labels.
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -38,6 +44,7 @@ class _JournalScreenState extends State<JournalScreen> {
     'neutral': '😐',
   };
 
+  /// Maps mood key to a gentle background color.
   Color _moodColor(String mood) {
     switch (mood) {
       case 'happy':
@@ -51,6 +58,7 @@ class _JournalScreenState extends State<JournalScreen> {
     }
   }
 
+  /// Produces a friendly timestamp (Today / Yesterday / explicit date).
   String _formatWhen(DateTime when) {
     final now = DateTime.now();
     final local = when.toLocal();
@@ -86,6 +94,8 @@ class _JournalScreenState extends State<JournalScreen> {
     super.dispose();
   }
 
+  /// Persists a new journal entry after basic emptiness check. Resets fields
+  /// & mood selection on success, surfacing status via snackbar.
   Future<void> _saveEntry() async {
     if (_titleController.text.trim().isEmpty &&
         _contentController.text.trim().isEmpty) {

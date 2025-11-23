@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+/// CommunityChatPage
+/// Placeholder community messaging surface partitioned into personal chats
+/// and multi-channel servers. Current implementation is static (no backend)
+/// serving as a UX prototype: avatar colors, message bubble layout, member
+/// drawer, create/join affordances. Future work: integrate real-time backend
+/// (e.g., Firebase Firestore or WebSocket) with presence, typing indicators,
+/// permissions, and persistent channels.
 
 /// Entry point widget
 class CommunityChatPage extends StatefulWidget {

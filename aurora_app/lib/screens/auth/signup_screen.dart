@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+/// SignUpScreen
+/// Registration flow capturing name, email, password & confirmation with a
+/// live password strength meter (length, uppercase, special character, bonus
+/// length). Provides immediate visual feedback and snackbar-based success /
+/// error messaging. Keeps state local for simplicity.
 import '../../widgets/auth/custom_text_field.dart';
 import '../../widgets/auth/auth_button.dart';
 import '../../services/auth_service.dart';
@@ -26,6 +31,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   static final _specialCharReg = RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-]');
   static final _upperReg = RegExp(r'[A-Z]');
 
+  /// Evaluates password strength and updates strength label + normalized
+  /// score (0..1) used by UI progress bar.
   void _evaluatePassword(String value) {
     int score = 0;
     if (value.length >= 8) score++;
@@ -60,6 +67,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
+  /// Executes Firebase sign up then seeds user profile. Shows success/error
+  /// via Aurora snackbar variants. Navigates back to login on success.
   Future<void> _handleSignUp() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);

@@ -1,4 +1,10 @@
 import 'dart:ui' show ImageFilter;
+/// DashboardScreen
+/// Main post-auth landing surface presenting quick navigation tiles into
+/// primary feature areas (Journal, Resources, Help Near Me, Chat). Utilizes a
+/// responsive SliverGrid to adapt tile count for wide layouts and streams the
+/// user's profile document to render a friendly greeting. Sign-out and
+/// settings available via AppBar actions.
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -91,6 +97,7 @@ class DashboardScreen extends StatelessWidget {
                               final data = snap.data?.data();
                               final displayName = (data?['displayName'] as String?)?.trim();
                               final fullName = (data?['fullName'] as String?)?.trim();
+                              // Determine best display name candidate in priority order.
                               final candidates = <String?>[
                                 displayName,
                                 fullName,
@@ -98,7 +105,10 @@ class DashboardScreen extends StatelessWidget {
                                 user?.email,
                                 'User',
                               ];
-                              final name = candidates.firstWhere((v) => v != null && v.isNotEmpty, orElse: () => 'User')!;
+                              final name = candidates.firstWhere(
+                                (v) => v != null && v.isNotEmpty,
+                                orElse: () => 'User',
+                              )!;
                               return _ProfileCard(name: 'Hello, $name');
                             },
                           )
@@ -116,7 +126,7 @@ class DashboardScreen extends StatelessWidget {
               sliver: SliverLayoutBuilder(
                 builder: (context, constraints) {
                   final viewportWidth = constraints.crossAxisExtent.clamp(280.0, 1200.0);
-                  final isWide = viewportWidth >= 680;
+                  final isWide = viewportWidth >= 680; // breakpoint for 4-column layout
                   final crossAxisCount = isWide ? 4 : 2;
                   final childAspectRatio = isWide ? 1.1 : 0.95;
 

@@ -1,4 +1,7 @@
-// lib/screens/timeline_tab.dart
+// TimelineTab
+// Visual + chronological representation of recent journal activity.
+// Top section: summary mood trend (last 7 days averaged) rendered with a
+// smooth line chart. Below: date-grouped entries newest-first.
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -93,7 +96,8 @@ class TimelineTab extends StatelessWidget {
     );
   }
 
-  /// builds a map: dateString -> average mood score for last 7 days
+  /// Builds a map (DateTime -> average mood score) for the last 7 days of
+  /// journal entries. Missing days return 0.0 so the chart maintains shape.
   Map<DateTime, double> _buildLast7DaysMoodData(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) {
     final now = DateTime.now();

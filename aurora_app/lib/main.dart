@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+/// main.dart
+/// Application entry: initializes Flutter bindings, Firebase (per-platform
+/// options), local notification service, then boots the root `AuroraApp`.
+/// AuroraApp sets up global theming (Material 3 + seeded color scheme) and
+/// provides a transparent SnackBar theme since we use a custom overlay toast.
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'screens/landing_screen.dart';
@@ -46,6 +51,10 @@ class AuroraApp extends StatelessWidget {
   }
 }
 
+/// _AuthGate
+/// Listens to auth state stream to route either authenticated dashboard or
+/// unauthenticated landing screen. Centralizes logic so deep widgets don't
+/// need to embed auth listeners.
 class _AuthGate extends StatelessWidget {
   const _AuthGate();
 

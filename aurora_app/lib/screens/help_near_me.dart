@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+/// HelpNearMePage
+/// Presents a (currently placeholder) map region along with a curated list of
+/// Canadian crisis / support helplines. Future enhancement: replace static
+/// image with live GoogleMap + geolocation + nearby services search.
 
 class HelpNearMePage extends StatelessWidget {
   const HelpNearMePage({super.key});

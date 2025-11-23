@@ -1,5 +1,6 @@
-// Deprecated placeholder HomeScreen kept for backward compatibility.
-// Use DashboardScreen instead.
+// HomeScreen (Deprecated)
+// Placeholder retained for backward compatibility with early navigation code.
+// Prefer `DashboardScreen`. Minimal logic provided; only sign-out action.
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 

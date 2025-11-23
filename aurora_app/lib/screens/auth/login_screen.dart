@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+/// LoginScreen
+/// Email/password authentication form with password reset flow and variants
+/// for user feedback via Aurora snackbars. Validation occurs locally before
+/// dispatching Firebase Auth operations. Designed to keep state minimal: only
+/// loading, obscured password toggle, and reset in-progress flag.
 import '../../widgets/auth/custom_text_field.dart';
 import '../../widgets/auth/auth_button.dart';
 import '../../services/auth_service.dart';
@@ -27,6 +32,8 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  /// Validates form then attempts sign-in, surfacing success or error via
+  /// snackbar. On success the global AuthGate will rebuild to dashboard.
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
@@ -49,6 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  /// Sends password reset email after a lightweight syntactic email check.
+  /// Provides info/error/success feedback using snackbar variants.
   Future<void> _handleResetPassword() async {
     final email = _emailController.text.trim();
     if (email.isEmpty || !email.contains('@')) {

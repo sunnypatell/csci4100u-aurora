@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'auth/login_screen.dart';
+/// LandingScreen
+/// Unauthenticated entry point presenting calming branding (glowing candle)
+/// and a single path forward ("Begin") into the authentication flow. All
+/// layout values tuned for a centered, tranquil visual hierarchy.
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -70,11 +74,14 @@ class LandingScreen extends StatelessWidget {
     );
   }
 
+  /// Builds the layered glowing candle visual used as a subtle animated-like
+  /// focal element without introducing actual animation (keeps initial build
+  /// simple). Multiple concentric radial gradients simulate soft glow.
   Widget _buildGlowingCandle() {
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Outer glow
+        // Outer glow layer – broad, faint radial gradient.
         Container(
           width: 140,
           height: 140,
@@ -89,7 +96,7 @@ class LandingScreen extends StatelessWidget {
             ),
           ),
         ),
-        // Middle glow
+        // Middle glow layer – tighter gradient for depth.
         Container(
           width: 100,
           height: 100,
@@ -104,7 +111,7 @@ class LandingScreen extends StatelessWidget {
             ),
           ),
         ),
-        // Candle body
+        // Candle body with inner flame accent.
         Container(
           width: 50,
           height: 70,
@@ -123,7 +130,7 @@ class LandingScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              // Flame
+              // Flame (vertical gradient to suggest warmth).
               Container(
                 width: 12,
                 height: 18,

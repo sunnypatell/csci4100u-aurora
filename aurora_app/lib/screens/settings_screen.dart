@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+/// SettingsScreen
+/// Allows editing of core profile fields (display name, birthday with date
+/// picker + age calculation, height, weight). Uses sparse update semantics so
+/// only changed values are sent. All operations surface feedback through
+/// Aurora snackbars.
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
@@ -25,6 +30,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadProfile();
   }
 
+  /// Loads existing profile document into form controllers.
   Future<void> _loadProfile() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -47,6 +53,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   String _fmtDate(DateTime d) => '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
+  /// Parses yyyy-mm-dd into DateTime or returns null if invalid.
   DateTime? _parseDate(String input) {
     try {
       if (input.isEmpty) return null;
@@ -61,6 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  /// Opens a Material date picker, defaulting to birthday or ~18 years ago.
   Future<void> _pickDate() async {
     final now = DateTime.now();
     final initialDate = _parseDate(_birthdayCtrl.text) ?? DateTime(now.year - 18, now.month, now.day);
@@ -78,6 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  /// Computes age in years from birthday (null-safe).
   int? _calculateAge(DateTime? birthday) {
     if (birthday == null) return null;
     final now = DateTime.now();
@@ -88,6 +97,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return age;
   }
 
+  /// Validates form, builds sparse profile update, and persists via AuthService.
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);

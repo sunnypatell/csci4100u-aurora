@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+/// ResourcesPage
+/// Curated self-help & support destination offering cards that route into
+/// focused help pages (Eating Disorders, ADHD, Anxiety/Depression, Other
+/// Supports). Includes a subtle breathing animation header to reinforce calm
+/// atmosphere. Hotline action currently placeholder—replace with real campus
+/// or community support contacts.
 import 'package:flutter/services.dart';
 import '../widgets/aurora_snackbar.dart';
 

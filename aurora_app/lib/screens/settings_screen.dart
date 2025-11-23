@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
+import '../widgets/aurora_snackbar.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -102,12 +103,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         weightKg: weight,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated')));
+      showAuroraSnackBar(context, 'Profile updated', variant: AuroraSnackVariant.success);
       Navigator.pop(context);
     } catch (e) {
       final msg = AuthService.instance.mapAuthError(e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        showAuroraSnackBar(context, msg, variant: AuroraSnackVariant.error);
       }
     } finally {
       if (mounted) setState(() => _saving = false);

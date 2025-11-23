@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+/// CustomTextField
+/// Reusable labeled input with consistent styling (radius, colors, focus +
+/// error borders). Supports expansion, multi-line, validation, suffix icon
+/// (e.g. password visibility), and custom capitalization. Separates label from
+/// field for flexible vertical spacing.
+
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final String label;

@@ -2,6 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 
+/// AuthService
+/// Centralized authentication & profile persistence layer.
+/// Wraps FirebaseAuth (sign up / sign in / sign out / password reset) and
+/// Firestore (profile document create + merge updates). Exceptions are
+/// intentionally propagated (using `rethrow`) so the UI can map them to
+/// friendly messages while stack traces remain intact for debugging.
 class AuthService {
   AuthService._internal();
   static final AuthService instance = AuthService._internal();
@@ -11,6 +17,8 @@ class AuthService {
   User? get currentUser => _auth.currentUser;
   Stream<User?> authStateChanges() => _auth.authStateChanges();
 
+  /// Creates a new account then seeds a Firestore profile document.
+  /// Returns the created [User] or throws a Firebase* exception.
   Future<User?> signUp({required String email, required String password, required String displayName}) async {
     try {
       final cred = await _auth.createUserWithEmailAndPassword(email: email, password: password);
@@ -48,6 +56,7 @@ class AuthService {
     }
   }
 
+  /// Signs the user in using email/password.
   Future<User?> signIn({required String email, required String password}) async {
     try {
       final cred = await _auth.signInWithEmailAndPassword(email: email, password: password);
@@ -61,6 +70,8 @@ class AuthService {
     }
   }
 
+  /// Updates Firestore profile & (optionally) FirebaseAuth display name.
+  /// Only non-null parameters are persisted.
   Future<void> updateProfile({String? displayName, DateTime? birthday, double? heightCm, double? weightKg}) async {
     final user = _auth.currentUser;
     if (user == null) throw FirebaseAuthException(code: 'no-user', message: 'Not signed in');
@@ -96,11 +107,13 @@ class AuthService {
     }
   }
 
+  /// Signs the current user out.
   Future<void> signOut() async => _auth.signOut();
   Future<void> sendPasswordResetEmail(String email) async {
     await _auth.sendPasswordResetEmail(email: email);
   }
 
+  /// Maps low-level Firebase exceptions into friendly UI strings.
   String mapAuthError(Object e) {
     if (e is FirebaseAuthException) {
       switch (e.code) {

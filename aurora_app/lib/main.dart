@@ -31,6 +31,15 @@ class AuroraApp extends StatelessWidget {
           seedColor: const Color(0xFFF5C97B),
           brightness: Brightness.light,
         ),
+        snackBarTheme: const SnackBarThemeData(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(18)),
+          ),
+          insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        ),
       ),
       home: const _AuthGate(),
     );

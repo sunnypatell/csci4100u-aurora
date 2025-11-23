@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../widgets/aurora_snackbar.dart';
 
 /// Entry widget (use in your routes or Navigator.push)
 class ResourcesPage extends StatefulWidget {
@@ -176,7 +177,7 @@ class _ResourcesPageState extends State<ResourcesPage>
                           onTap: () => _open(context, const ADHDHelpPage()),
                         ),
                         ResourceCard(
-                          title: "Anxiety & Depression",
+                          title: "Anxiety",
                           subtitle: "Grounding, calm, connection",
                           emoji: "🌊",
                           gradientA: Colors.teal.shade200.withOpacity(0.35),
@@ -551,13 +552,11 @@ class _SimpleHelpScaffold extends StatelessWidget {
             icon: const Icon(Icons.call_rounded),
             onPressed: () {
               // TODO: Replace with your hotline or on-campus support action.
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  behavior: SnackBarBehavior.floating,
-                  content: Text(
-                    "Hotline / campus support: plug in your numbers or link here.",
-                  ),
-                ),
+              showAuroraSnackBar(
+                context,
+                "Hotline / campus support: plug in your numbers or link here.",
+                variant: AuroraSnackVariant.info,
+                icon: Icons.call_rounded, // override default info icon
               );
             },
             label: const Text("Talk to someone"),

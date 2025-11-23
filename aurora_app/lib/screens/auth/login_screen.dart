@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/auth/custom_text_field.dart';
 import '../../widgets/auth/auth_button.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/aurora_snackbar.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -35,17 +36,13 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Signed in successfully')),
-      );
+      showAuroraSnackBar(context, 'Signed in successfully', variant: AuroraSnackVariant.success);
       // AuthGate will rebuild to Dashboard automatically; just pop back to root.
       Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (e) {
       final msg = AuthService.instance.mapAuthError(e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg)),
-        );
+        showAuroraSnackBar(context, msg, variant: AuroraSnackVariant.error);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -55,25 +52,19 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleResetPassword() async {
     final email = _emailController.text.trim();
     if (email.isEmpty || !email.contains('@')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a valid email to reset password')),
-      );
+      showAuroraSnackBar(context, 'Enter a valid email to reset password', variant: AuroraSnackVariant.info);
       return;
     }
     setState(() => _resetting = true);
     try {
       await AuthService.instance.sendPasswordResetEmail(email);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Password reset email sent to $email')),
-        );
+        showAuroraSnackBar(context, 'Password reset email sent to $email', variant: AuroraSnackVariant.success);
       }
     } catch (e) {
       final msg = AuthService.instance.mapAuthError(e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg)),
-        );
+        showAuroraSnackBar(context, msg, variant: AuroraSnackVariant.error);
       }
     } finally {
       if (mounted) setState(() => _resetting = false);

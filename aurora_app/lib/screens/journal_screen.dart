@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../services/journal_service.dart';
 import '../widgets/auth/custom_text_field.dart';
+import '../widgets/aurora_snackbar.dart';
 import 'timeline_tab.dart';
 
 class JournalScreen extends StatefulWidget {
@@ -88,9 +89,7 @@ class _JournalScreenState extends State<JournalScreen> {
   Future<void> _saveEntry() async {
     if (_titleController.text.trim().isEmpty &&
         _contentController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Write something first 🙂')),
-      );
+      showAuroraSnackBar(context, 'Write something first 🙂', variant: AuroraSnackVariant.info);
       return;
     }
     setState(() => _isSaving = true);
@@ -104,14 +103,10 @@ class _JournalScreenState extends State<JournalScreen> {
       _titleController.clear();
       _contentController.clear();
       setState(() => _selectedMood = 'neutral');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Journal entry saved! 📝')),
-      );
+      showAuroraSnackBar(context, 'Journal entry saved! 📝', variant: AuroraSnackVariant.success);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving entry: $e')),
-      );
+      showAuroraSnackBar(context, 'Error saving entry: $e', variant: AuroraSnackVariant.error);
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/auth/custom_text_field.dart';
 import '../../widgets/auth/auth_button.dart';
 import '../../services/auth_service.dart';
+import '../../widgets/aurora_snackbar.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -69,16 +70,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         displayName: _nameController.text.trim(),
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account created!')),
-      );
+      showAuroraSnackBar(context, 'Account created!', variant: AuroraSnackVariant.success);
       Navigator.pop(context); // Back to login
     } catch (e) {
       final msg = AuthService.instance.mapAuthError(e);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg)),
-        );
+        showAuroraSnackBar(context, msg, variant: AuroraSnackVariant.error);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

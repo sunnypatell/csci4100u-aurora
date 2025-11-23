@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+/// AuthButton
+/// Primary call-to-action button used across authentication flows.
+/// Provides a consistent height, loading spinner state, and disabled styling.
+/// Keeps elevation at 0 for a calm, flat aesthetic matching the overall theme.
+
 class AuthButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;

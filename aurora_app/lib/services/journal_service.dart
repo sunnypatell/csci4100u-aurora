@@ -1,6 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+/// JournalService
+/// Lightweight Firestore wrapper for per-user journal CRUD operations.
+/// Collection layout: `users/{uid}/journalEntries/{autoId}`.
+/// All timestamps use server time for consistency across clients.
+/// Throws a FirebaseException with `code: no-current-user` when invoked
+/// without an authenticated user.
+
 class JournalService {
   JournalService._();
   static final instance = JournalService._();
@@ -10,7 +17,7 @@ class JournalService {
 
   String? get userId => _auth.currentUser?.uid;
 
-  // Stream the current user's journal entries
+  /// Streams current user's journal entries ordered newest-first.
   Stream<QuerySnapshot<Map<String, dynamic>>> journalEntriesStream() {
     final uid = userId;
     if (uid == null) {
@@ -25,7 +32,7 @@ class JournalService {
         .snapshots();
   }
 
-  // New journal entry
+  /// Adds a new journal entry document.
   Future<void> addEntry({
     required String title,
     required String content,
@@ -49,7 +56,7 @@ class JournalService {
     });
   }
 
-  // Delete journal entry
+  /// Deletes a journal entry by id.
   Future<void> deleteEntry(String entryId) async {
     final uid = userId;
     if (uid == null) {
@@ -64,7 +71,7 @@ class JournalService {
         .delete();
   }
 
-  // Update an existing entry
+  /// Updates an existing entry with provided non-null fields.
   Future<void> updateEntry(
     String entryId, {
     String? title,
@@ -91,7 +98,7 @@ class JournalService {
         .set(update, SetOptions(merge: true));
   }
 
-  // Get a single entry (returns null if not found)
+  /// Fetches a single entry document, returns null if not found.
   Future<Map<String, dynamic>?> getEntry(String entryId) async {
     final uid = userId;
     if (uid == null) {

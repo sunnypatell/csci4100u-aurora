@@ -1,4 +1,8 @@
-// lib/services/notification_service.dart
+// NotificationService
+// Lightweight wrapper around flutter_local_notifications providing
+// initialization + a daily journal reminder scheduling helper. Timezone
+// handling is performed up front to support precise scheduling on all
+// platforms. All public methods are idempotent; calling init twice is safe.
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -12,6 +16,8 @@ class NotificationService {
 
   bool _initialized = false;
 
+  /// Initializes timezone data + platform specific notification settings.
+  /// Safe to call multiple times; subsequent calls are no-ops.
   Future<void> init() async {
     if (_initialized) return;
 
@@ -38,6 +44,8 @@ class NotificationService {
     _initialized = true;
   }
 
+  /// Schedules a daily notification reminding the user to journal.
+  /// Default time is 21:00 (9PM) local timezone.
   Future<void> scheduleDailyJournalReminder({
     int hour = 21,
     int minute = 0,
@@ -78,10 +86,12 @@ class NotificationService {
     );
   }
 
+  /// Cancels the previously scheduled daily journal reminder notification.
   Future<void> cancelDailyJournalReminder() async {
     await _plugin.cancel(1001);
   }
 
+  /// Computes the next occurrence of given hour/minute in local timezone.
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
     final now = tz.TZDateTime.now(tz.local);
     var scheduled =

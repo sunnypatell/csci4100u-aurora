@@ -52,6 +52,7 @@ Sunny has implemented the foundational infrastructure portions of the applicatio
 | Date & Age Utilities | Implemented parsing/formatting helpers and age calculation logic to enhance profile semantics. | `lib/screens/settings_screen.dart` | Prepares app for age-relevant features. |
 | UI/UX Consistency | Applied cohesive color scheme (#F5C97B seeds, soft neutrals), elevation, spacing standards, and typography hierarchy across all screens. | Multiple UI files | Ensures calm, coherent user experience. |
 | Code Quality & Lints | Addressed Dart analyzer suggestions (e.g., replacing `throw e` with `rethrow` for stack preservation). | `lib/services/auth_service.dart` | Maintains clean analyzer output (0 issues). |
+| Unified Snackbar System | Implemented custom overlay-based Aurora snackbar/toast with semantic variants (success, error, info, alert) replacing platform default dark bar, ensuring accessible calm styling. | `lib/widgets/aurora_snackbar.dart`, variant usage across screens | Consistent UX feedback surface (icons, color accents, animation). |
 | Min SDK Update | Adjusted Android `minSdk` to 23 for Firebase Auth compatibility; enabled predictive back callback for Android 13+. | `android/app/build.gradle`, `android/app/src/main/AndroidManifest.xml` | Resolves build error & improves navigation UX. |
 
 ## Running the App

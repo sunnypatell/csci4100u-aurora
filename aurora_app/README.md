@@ -55,6 +55,7 @@ Sunny has implemented the foundational infrastructure portions of the applicatio
 | Unified Snackbar System | Implemented custom overlay-based Aurora snackbar/toast with semantic variants (success, error, info, alert) replacing platform default dark bar, ensuring accessible calm styling. | `lib/widgets/aurora_snackbar.dart`, variant usage across screens | Consistent UX feedback surface (icons, color accents, animation). |
 | Notification & Reminder System | Expanded notification service: timezone init, permission requests (Android/iOS/macOS), Android channel creation, persistent daily journal reminder scheduling, instant & one-off notifications, tap payload handler. Integrated auto scheduling at app start and after successful journal save. | `lib/services/notifications_service.dart`, `lib/main.dart`, `lib/screens/journal_screen.dart` | Foundation for future wellness nudges & behavioral habit formation. |
 | Min SDK Update | Adjusted Android `minSdk` to 23 for Firebase Auth compatibility; enabled predictive back callback for Android 13+. | `android/app/build.gradle`, `android/app/src/main/AndroidManifest.xml` | Resolves build error & improves navigation UX. |
+| HTTP Remote Quote Fetch | `RemoteResourceService` now uses RealInspire public endpoint (no key, CORS safe) to load a random encouragement quote with fallback list & refresh UI. | `lib/services/remote_resource_service.dart`, `lib/screens/resources.dart` | External API consumption & resilient network handling. |
 
 ## Running the App
 

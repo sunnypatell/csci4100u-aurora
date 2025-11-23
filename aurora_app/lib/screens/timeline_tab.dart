@@ -140,6 +140,12 @@ class TimelineTab extends StatelessWidget {
   }
 }
 
+/// Card rendering a 7‑day mood trend line.
+/// Enhancements:
+/// - Smoothed curved line with gradient fill.
+/// - Responsive weekday labeling (fewer labels on narrow screens).
+/// - Subtle dots + touch overlay disabled for static snapshot.
+/// - Zero days kept to preserve line continuity (displayed semi‑transparent).
 class _MoodChartCard extends StatelessWidget {
   final Map<DateTime, double> moodData;
   const _MoodChartCard({required this.moodData});
@@ -156,6 +162,10 @@ class _MoodChartCard extends StatelessWidget {
       final y = moodData[d] ?? 0;
       spots.add(FlSpot(i.toDouble(), y));
     }
+
+    final width = MediaQuery.of(context).size.width;
+    // On narrow screens limit bottom labels to first/middle/last for legibility.
+    final bool compact = width < 420;
 
     return Container(
       decoration: BoxDecoration(
@@ -204,14 +214,10 @@ class _MoodChartCard extends StatelessWidget {
                       showTitles: true,
                       reservedSize: 28,
                       getTitlesWidget: (value, meta) {
-                        // 0..5 mood scale
                         if (value % 1 != 0) return const SizedBox.shrink();
                         return Text(
                           value.toInt().toString(),
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: Color(0xFF6F6C66),
-                          ),
+                          style: const TextStyle(fontSize: 10, color: Color(0xFF6F6C66)),
                         );
                       },
                     ),
@@ -224,34 +230,57 @@ class _MoodChartCard extends StatelessWidget {
                         if (index < 0 || index >= dates.length) {
                           return const SizedBox.shrink();
                         }
+                        if (compact &&
+                            index != 0 &&
+                            index != dates.length - 1 &&
+                            index != (dates.length / 2).floor()) {
+                          return const SizedBox.shrink();
+                        }
                         final d = dates[index];
                         return Text(
-                          DateFormat('E').format(d), // Mon, Tue...
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: Color(0xFF6F6C66),
-                          ),
+                          DateFormat('E').format(d),
+                          style: const TextStyle(fontSize: 10, color: Color(0xFF6F6C66)),
                         );
                       },
                     ),
                   ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
-                borderData: FlBorderData(
-                  show: false,
-                ),
+                borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
                     spots: spots,
                     isCurved: true,
+                    curveSmoothness: 0.32,
                     barWidth: 3,
-                    color: const Color(0xFFF2B8A0),
-                    dotData: FlDotData(show: true),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFF2B8A0), Color(0xFFF5C97B)],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) {
+                        final isZero = spot.y == 0;
+                        return FlDotCirclePainter(
+                          radius: 3.5,
+                          color: isZero ? const Color(0xFF6F6C66).withOpacity(0.35) : const Color(0xFFF2B8A0),
+                          strokeWidth: 0,
+                        );
+                      },
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFFF2B8A0).withOpacity(0.28),
+                          const Color(0xFFF5C97B).withOpacity(0.10),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -260,10 +289,7 @@ class _MoodChartCard extends StatelessWidget {
           const SizedBox(height: 6),
           const Text(
             'Higher = more positive moods',
-            style: TextStyle(
-              fontSize: 11,
-              color: Color(0xFF6F6C66),
-            ),
+            style: TextStyle(fontSize: 11, color: Color(0xFF6F6C66)),
           ),
         ],
       ),

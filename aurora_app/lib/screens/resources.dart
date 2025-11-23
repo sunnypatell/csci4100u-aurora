@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 /// or community support contacts.
 import 'package:flutter/services.dart';
 import '../widgets/aurora_snackbar.dart';
+import '../services/remote_resource_service.dart';
 
 /// Entry widget (use in your routes or Navigator.push)
 class ResourcesPage extends StatefulWidget {
@@ -20,6 +21,8 @@ class _ResourcesPageState extends State<ResourcesPage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _breatheCtrl;
   late final Animation<double> _breathe;
+  late Future<Quote> _quoteFuture; // Cached future to allow refresh
+  bool _justRefreshed = false; // Track refresh to show success snackbar once
 
   @override
   void initState() {
@@ -32,6 +35,7 @@ class _ResourcesPageState extends State<ResourcesPage>
     _breathe = Tween(begin: 0.92, end: 1.08)
         .chain(CurveTween(curve: Curves.easeInOut))
         .animate(_breatheCtrl);
+    _quoteFuture = RemoteResourceService.instance.fetchRandomQuote();
   }
 
   @override
@@ -43,7 +47,6 @@ class _ResourcesPageState extends State<ResourcesPage>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFFF5EFE7),
@@ -60,13 +63,9 @@ class _ResourcesPageState extends State<ResourcesPage>
           icon: const Icon(Icons.arrow_back_ios_new_rounded,
               color: Color(0xFF2F2E2C)),
           tooltip: 'Back to Dashboard',
-          onPressed: () {
-            Navigator.pop(context); // 👈 goes back one page
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-
-      // Soft gradient background
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -79,137 +78,156 @@ class _ResourcesPageState extends State<ResourcesPage>
           ),
         ),
         child: SafeArea(
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Calming header with breathing bubble
-                      Row(
+          child: FutureBuilder<Quote>(
+            future: _quoteFuture,
+            builder: (context, snap) {
+              final quote = snap.data;
+              if (snap.connectionState == ConnectionState.done && _justRefreshed) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+                  final isFallback = quote?.isFallback ?? false;
+                  if (isFallback) {
+                    showAuroraSnackBar(
+                      context,
+                      'Network issue – showing fallback quote',
+                      variant: AuroraSnackVariant.alert,
+                    );
+                  } else {
+                    showAuroraSnackBar(context, 'Quote refreshed ✓', variant: AuroraSnackVariant.success);
+                  }
+                });
+                _justRefreshed = false;
+              }
+              return CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ScaleTransition(
-                            scale: _breathe,
-                            child: Container(
-                              width: 42,
-                              height: 42,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  colors: [
-                                    colorScheme.primary.withOpacity(0.28),
-                                    colorScheme.tertiary.withOpacity(0.28),
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color:
-                                        colorScheme.primary.withOpacity(0.18),
-                                    blurRadius: 12,
-                                    spreadRadius: 2,
+                          _QuoteCard(
+                            quote: quote,
+                            loading: snap.connectionState != ConnectionState.done,
+                            onRefresh: _refreshQuote,
+                          ),
+                          const SizedBox(height: 16),
+                          // Calming header with breathing bubble
+                          Row(
+                            children: [
+                              ScaleTransition(
+                                scale: _breathe,
+                                child: Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        colorScheme.primary.withOpacity(0.28),
+                                        colorScheme.tertiary.withOpacity(0.28),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: colorScheme.primary.withOpacity(0.18),
+                                        blurRadius: 12,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              alignment: Alignment.center,
-                              child: const Text("🫧",
-                                  style: TextStyle(fontSize: 18)),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            "You’re safe here",
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w700,
+                                  alignment: Alignment.center,
+                                  child: const Text("🫧", style: TextStyle(fontSize: 18)),
                                 ),
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                "You’re safe here",
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                              ),
+                            ],
                           ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Pick what you need right now. Small steps count. 💙",
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.3),
+                          ),
+                          const SizedBox(height: 16),
+                          const _TipChip(label: "Tip: Inhale 4 • Hold 4 • Exhale 4", icon: "🌿"),
+                          const SizedBox(height: 16),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "Pick what you need right now. Small steps count. 💙",
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              height: 1.3,
-                            ),
-                      ),
-                      const SizedBox(height: 16),
-                      const _TipChip(
-                        label: "Tip: Inhale 4 • Hold 4 • Exhale 4",
-                        icon: "🌿",
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              // Grid of resource cards
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                sliver: SliverLayoutBuilder(
-                  builder: (context, constraints) {
-                    // Responsive columns
-                    final crossAxisCount =
-                        constraints.crossAxisExtent > 780 ? 3 : 2;
-
-                    return SliverGrid(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        mainAxisSpacing: 14,
-                        crossAxisSpacing: 14,
-                        childAspectRatio: 1.08,
-                      ),
-                      delegate: SliverChildListDelegate.fixed([
-                        ResourceCard(
-                          title: "Eating Disorders",
-                          subtitle: "Gentle guidance & support",
-                          emoji: "🥣",
-                          gradientA: Colors.pink.shade200.withOpacity(0.35),
-                          gradientB: Colors.purple.shade200.withOpacity(0.35),
-                          onTap: () =>
-                              _open(context, const EatingDisordersHelpPage()),
-                        ),
-                        ResourceCard(
-                          title: "ADHD Help",
-                          subtitle: "Focus tools & coping tips",
-                          emoji: "🧠",
-                          gradientA: Colors.blue.shade200.withOpacity(0.35),
-                          gradientB: Colors.green.shade200.withOpacity(0.35),
-                          onTap: () => _open(context, const ADHDHelpPage()),
-                        ),
-                        ResourceCard(
-                          title: "Anxiety",
-                          subtitle: "Grounding, calm, connection",
-                          emoji: "🌊",
-                          gradientA: Colors.teal.shade200.withOpacity(0.35),
-                          gradientB: Colors.cyan.shade200.withOpacity(0.35),
-                          onTap: () =>
-                              _open(context, const AnxietyDepressionHelpPage()),
-                        ),
-                        ResourceCard(
-                          title: "More Supports",
-                          subtitle: "Hotlines, journaling, music",
-                          emoji: "🧩",
-                          gradientA: Colors.amber.shade200.withOpacity(0.35),
-                          gradientB: Colors.indigo.shade200.withOpacity(0.35),
-                          onTap: () =>
-                              _open(context, const OtherSupportsPage()),
-                        ),
-                      ]),
-                    );
-                  },
-                ),
-              ),
-            ],
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    sliver: SliverLayoutBuilder(
+                      builder: (context, constraints) {
+                        final crossAxisCount = constraints.crossAxisExtent > 780 ? 3 : 2;
+                        return SliverGrid(
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: crossAxisCount,
+                            mainAxisSpacing: 14,
+                            crossAxisSpacing: 14,
+                            childAspectRatio: 1.08,
+                          ),
+                          delegate: SliverChildListDelegate.fixed([
+                            ResourceCard(
+                              title: "Eating Disorders",
+                              subtitle: "Gentle guidance & support",
+                              emoji: "🥣",
+                              gradientA: Colors.pink.shade200.withOpacity(0.35),
+                              gradientB: Colors.purple.shade200.withOpacity(0.35),
+                              onTap: () => _open(context, const EatingDisordersHelpPage()),
+                            ),
+                            ResourceCard(
+                              title: "ADHD Help",
+                              subtitle: "Focus tools & coping tips",
+                              emoji: "🧠",
+                              gradientA: Colors.blue.shade200.withOpacity(0.35),
+                              gradientB: Colors.green.shade200.withOpacity(0.35),
+                              onTap: () => _open(context, const ADHDHelpPage()),
+                            ),
+                            ResourceCard(
+                              title: "Anxiety",
+                              subtitle: "Grounding, calm, connection",
+                              emoji: "🌊",
+                              gradientA: Colors.teal.shade200.withOpacity(0.35),
+                              gradientB: Colors.cyan.shade200.withOpacity(0.35),
+                              onTap: () => _open(context, const AnxietyDepressionHelpPage()),
+                            ),
+                            ResourceCard(
+                              title: "More Supports",
+                              subtitle: "Hotlines, journaling, music",
+                              emoji: "🧩",
+                              gradientA: Colors.amber.shade200.withOpacity(0.35),
+                              gradientB: Colors.indigo.shade200.withOpacity(0.35),
+                              onTap: () => _open(context, const OtherSupportsPage()),
+                            ),
+                          ]),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
     );
+  }
+
+  void _refreshQuote() {
+    setState(() {
+      _quoteFuture = RemoteResourceService.instance.fetchRandomQuote();
+      _justRefreshed = true;
+    });
+    showAuroraSnackBar(context, 'Refreshing...', variant: AuroraSnackVariant.info);
   }
 
   void _open(BuildContext context, Widget page) {
@@ -395,6 +413,95 @@ class _ResourceCardState extends State<ResourceCard> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Displays a fetched motivational quote with graceful loading & fallback.
+class _QuoteCard extends StatelessWidget {
+  final Quote? quote;
+  final bool loading;
+  final VoidCallback onRefresh;
+  const _QuoteCard({required this.quote, required this.loading, required this.onRefresh});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: Container(
+        key: ValueKey(loading),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: loading
+            ? Row(
+                children: const [
+                  SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2.5),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      'Fetching a gentle thought...',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Daily Encouragement',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    '“${quote?.text ?? 'Keep going.'}”',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontStyle: FontStyle.italic,
+                          color: (quote?.isFallback ?? false)
+                              ? cs.onSurfaceVariant
+                              : cs.onSurface,
+                        ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '- ${quote?.author ?? 'Unknown'}${(quote?.isFallback ?? false) ? ' (fallback)' : ''}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                  ),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: onRefresh,
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: const Text('Refresh'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: cs.primary,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                    ),
+                  )
+                ],
+              ),
       ),
     );
   }

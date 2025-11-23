@@ -28,6 +28,7 @@ Aurora is a cross‑platform (Android, iOS, Web) Flutter application focused on 
 - Dashboard & timeline visualizations for progress tracking
 - Push notifications (Firebase Cloud Messaging)
 - Multi‑platform Flutter build pipeline
+- Remote motivational quote via HTTP (RealInspire API) in Resources
 
 ## Tech Stack
 - **Framework:** Flutter (Dart)
@@ -164,3 +165,8 @@ Distributed under the terms of the MIT License. See [`LICENSE`](LICENSE) for det
 
 ---
 Made with curiosity, care, and Flutter 💙
+
+## Feature Matrix
+| Feature | Status | Notes |
+|---------|--------|-------|
+| HTTP Remote Quote (ZenQuotes) | ✅ Implemented | Fetch & refresh daily encouragement card in `resources.dart` |

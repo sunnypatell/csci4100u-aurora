@@ -7,9 +7,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-class TimelineTab extends StatelessWidget {
+class TimelineTab extends StatefulWidget {
   final String uid;
   const TimelineTab({super.key, required this.uid});
+
+  @override
+  State<TimelineTab> createState() => _TimelineTabState();
+}
+
+enum _MoodRange { seven, thirty }
+
+class _TimelineTabState extends State<TimelineTab> {
+  _MoodRange _range = _MoodRange.seven;
 
   // mood → numeric score
   static const Map<String, double> _moodScore = {
@@ -28,7 +37,7 @@ class TimelineTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final entriesStream = FirebaseFirestore.instance
         .collection('users')
-        .doc(uid)
+        .doc(widget.uid)
         .collection('journalEntries')
         .orderBy('createdAt', descending: true)
         .snapshots();
@@ -60,13 +69,17 @@ class TimelineTab extends StatelessWidget {
           ..sort((a, b) => b.compareTo(a)); // newest first
 
         // 2) build 7-day mood data for the chart
-        final moodData = _buildLast7DaysMoodData(docs);
+        final moodData = _buildMoodData(docs, _range == _MoodRange.seven ? 7 : 30);
 
         return ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           children: [
             const SizedBox(height: 4),
-            _MoodChartCard(moodData: moodData),
+            _MoodChartCard(
+              moodData: moodData,
+              days: _range == _MoodRange.seven ? 7 : 30,
+              onSelectRange: _showRangeDialog,
+            ),
             const SizedBox(height: 16),
             if (sortedKeys.isEmpty)
               Container(
@@ -98,45 +111,56 @@ class TimelineTab extends StatelessWidget {
 
   /// Builds a map (DateTime -> average mood score) for the last 7 days of
   /// journal entries. Missing days return 0.0 so the chart maintains shape.
-  Map<DateTime, double> _buildLast7DaysMoodData(
-      List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) {
+  Map<DateTime, double> _buildMoodData(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs, int days) {
     final now = DateTime.now();
-    // create 7 days back map with empty lists
     final Map<String, List<double>> dayScores = {};
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < days; i++) {
       final day = DateTime(now.year, now.month, now.day).subtract(Duration(days: i));
       final key = DateFormat('yyyy-MM-dd').format(day);
       dayScores[key] = [];
     }
-
-    // collect scores for these 7 days
     for (final doc in docs) {
       final data = doc.data();
       final ts = data['createdAt'];
       if (ts is! Timestamp) continue;
       final dt = ts.toDate();
-      final dayKey = DateFormat('yyyy-MM-dd').format(
-        DateTime(dt.year, dt.month, dt.day),
-      );
+      final dayKey = DateFormat('yyyy-MM-dd').format(DateTime(dt.year, dt.month, dt.day));
       if (!dayScores.containsKey(dayKey)) continue;
-
       final mood = (data['mood'] ?? 'neutral') as String;
-      final score = _moodScore[mood] ?? 2; // default neutral
+      final score = _moodScore[mood] ?? 2;
       dayScores[dayKey]!.add(score);
     }
-
-    // average per day
     final Map<DateTime, double> result = {};
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < days; i++) {
       final day = DateTime(now.year, now.month, now.day).subtract(Duration(days: i));
       final key = DateFormat('yyyy-MM-dd').format(day);
       final scores = dayScores[key]!;
-      final avg = scores.isEmpty
-          ? 0.0
-          : scores.reduce((a, b) => a + b) / scores.length;
+      final avg = scores.isEmpty ? 0.0 : scores.reduce((a, b) => a + b) / scores.length;
       result[day] = avg;
     }
     return result;
+  }
+
+  Future<void> _showRangeDialog() async {
+    final chosen = await showDialog<_MoodRange>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('Select mood range'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, _MoodRange.seven),
+            child: const Text('Last 7 days'),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, _MoodRange.thirty),
+            child: const Text('Last 30 days'),
+          ),
+        ],
+      ),
+    );
+    if (chosen != null) {
+      setState(() => _range = chosen);
+    }
   }
 }
 
@@ -148,7 +172,9 @@ class TimelineTab extends StatelessWidget {
 /// - Zero days kept to preserve line continuity (displayed semi‑transparent).
 class _MoodChartCard extends StatelessWidget {
   final Map<DateTime, double> moodData;
-  const _MoodChartCard({required this.moodData});
+  final int days;
+  final VoidCallback onSelectRange;
+  const _MoodChartCard({required this.moodData, required this.days, required this.onSelectRange});
 
   @override
   Widget build(BuildContext context) {
@@ -183,13 +209,23 @@ class _MoodChartCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '7-day mood curve',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF2F2E2C),
-            ),
+          Row(
+            children: [
+              Text(
+                days == 7 ? '7-day mood curve' : '30-day mood curve',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2F2E2C),
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                tooltip: 'Change range',
+                onPressed: onSelectRange,
+                icon: const Icon(Icons.tune_rounded, size: 20, color: Color(0xFF6F6C66)),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           SizedBox(
@@ -237,8 +273,9 @@ class _MoodChartCard extends StatelessWidget {
                           return const SizedBox.shrink();
                         }
                         final d = dates[index];
+                        final pattern = days == 7 ? 'E' : 'd';
                         return Text(
-                          DateFormat('E').format(d),
+                          DateFormat(pattern).format(d),
                           style: const TextStyle(fontSize: 10, color: Color(0xFF6F6C66)),
                         );
                       },

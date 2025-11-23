@@ -9,6 +9,7 @@ import 'firebase_options.dart';
 import 'screens/landing_screen.dart';
 // import 'screens/auth/login_screen.dart'; // not needed when Landing is the unauthenticated start
 import 'screens/dashboard_screen.dart';
+import 'screens/aurora_shell.dart';
 import 'services/auth_service.dart';
 import 'services/notifications_service.dart';
 
@@ -75,7 +76,8 @@ class _AuthGate extends StatelessWidget {
 
         // If signed in, show dashboard. If not, show landing page (user can proceed to login/signup).
         if (snapshot.hasData) {
-          return const DashboardScreen();
+          // Authenticated: show shell with bottom navigation across core areas.
+          return const AuroraShell();
         }
         return const LandingScreen();
       },

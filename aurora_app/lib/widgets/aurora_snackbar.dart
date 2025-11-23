@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 /// Provides a cross-platform, theme-consistent toast / snackbar replacement.
 /// Rationale: default Material SnackBar renders a dark bar on web that clashes
 /// with the calm light palette. This overlay implementation allows custom
-/// glassy styling, variant-driven iconography, and entrance / exit animations.
+/// glassy styling, variant-driven iconography, entrance / exit animations, and
+/// now: FIFO queueing + tap-to-dismiss. Multiple rapid calls are queued and
+/// shown sequentially. User can dismiss early by tapping the snackbar.
 /// Use `showAuroraSnackBar(context, message, variant: ...)` instead of the
 /// ScaffoldMessenger API throughout the app.
 
@@ -12,6 +14,16 @@ import 'package:flutter/material.dart';
 enum AuroraSnackVariant { success, error, info, alert }
 
 OverlayEntry? _currentAuroraSnack;
+OverlayState? _overlayState; // store overlay directly to avoid disposed context lookups
+final List<_QueuedSnack> _snackQueue = [];
+
+class _QueuedSnack {
+  final String message;
+  final IconData icon;
+  final Color accent;
+  final Duration duration;
+  _QueuedSnack(this.message, this.icon, this.accent, this.duration);
+}
 
 /// Shows a custom overlay-based snackbar/toast that is visually consistent
 /// across platforms (avoids Material default dark bar on web).
@@ -25,27 +37,40 @@ void showAuroraSnackBar(
 }) {
   icon ??= _iconFor(variant);
   accent ??= _accentFor(variant);
+  // Acquire overlay (prefer root for stability across routes).
+  final overlay = Overlay.of(context, rootOverlay: true);
+  if (overlay == null) return;
+  _overlayState = overlay;
 
-  // Remove any existing snackbar overlay.
+  if (_currentAuroraSnack != null) {
+    _snackQueue.add(_QueuedSnack(message, icon!, accent!, duration));
+    return;
+  }
+  _displaySnack(_QueuedSnack(message, icon!, accent!, duration));
+}
+
+void _displaySnack(_QueuedSnack snack) {
+  final overlay = _overlayState;
+  if (overlay == null || !overlay.mounted) return;
+
   _currentAuroraSnack?.remove();
-  _currentAuroraSnack = null;
-
-  final overlay = Overlay.of(context);
-  if (overlay == null) return; // no overlay available
 
   final entry = OverlayEntry(
     builder: (ctx) => _AuroraSnackOverlay(
-      message: message,
-      icon: icon!,
-      accent: accent!,
-      duration: duration,
+      message: snack.message,
+      icon: snack.icon,
+      accent: snack.accent,
+      duration: snack.duration,
       onClose: () {
         _currentAuroraSnack?.remove();
         _currentAuroraSnack = null;
+        if (_snackQueue.isNotEmpty) {
+          final next = _snackQueue.removeAt(0);
+          WidgetsBinding.instance.addPostFrameCallback((_) => _displaySnack(next));
+        }
       },
     ),
   );
-
   overlay.insert(entry);
   _currentAuroraSnack = entry;
 }
@@ -219,17 +244,18 @@ class _AuroraSnackOverlayState extends State<_AuroraSnackOverlay>
       left: 0,
       right: 0,
       bottom: 16 + safeBottom,
-      child: IgnorePointer(
-        ignoring: true,
-        child: AnimatedBuilder(
-          animation: _ctrl,
-            builder: (context, _) => Opacity(
-            opacity: _fade.value,
-            child: FractionalTranslation(
-              translation: _slide.value,
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 720),
+      child: AnimatedBuilder(
+        animation: _ctrl,
+        builder: (context, _) => Opacity(
+          opacity: _fade.value,
+          child: FractionalTranslation(
+            translation: _slide.value,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: GestureDetector(
+                  onTap: _dismiss, // tap-to-dismiss
+                  behavior: HitTestBehavior.translucent,
                   child: _AuroraSnackContent(
                     message: widget.message,
                     icon: widget.icon,

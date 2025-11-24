@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 /// atmosphere. Hotline action currently placeholder—replace with real campus
 /// or community support contacts.
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../widgets/aurora_snackbar.dart';
 import '../services/remote_resource_service.dart';
 
@@ -666,19 +667,44 @@ class _SimpleHelpScaffold extends StatelessWidget {
           const SizedBox(height: 18),
           FilledButton.icon(
             icon: const Icon(Icons.call_rounded),
-            onPressed: () {
-              // TODO: Replace with your hotline or on-campus support action.
-              showAuroraSnackBar(
-                context,
-                "Hotline / campus support: plug in your numbers or link here.",
-                variant: AuroraSnackVariant.info,
-                icon: Icons.call_rounded, // override default info icon
-              );
-            },
+            onPressed: () => _launchSupport(context),
             label: const Text("Talk to someone"),
           ),
         ],
       ),
     );
+  }
+
+  /// Launches preferred support path: attempts campus mental health page
+  /// first (browser) then falls back to direct phone dial invocation for a
+  /// provincial mental health helpline. If neither can launch, surfaces a
+  /// snackbar with the number so the user can call manually. In production
+  /// you may externalize these contacts and localize per region.
+  Future<void> _launchSupport(BuildContext context) async {
+    const campusUrl = 'https://studentservices.ontariotechu.ca/current-students/health-and-wellness/i-am-in-distress/index.php';
+    const hotlineNumber = '+1-866-531-2600'; // ConnexOntario (example)
+    final hotlineUri = Uri(scheme: 'tel', path: hotlineNumber);
+
+    try {
+      // Try campus wellness page first
+      final campusUri = Uri.parse(campusUrl);
+      if (await canLaunchUrl(campusUri)) {
+        await launchUrl(campusUri, mode: LaunchMode.externalApplication);
+        if (!context.mounted) return;
+        showAuroraSnackBar(context, 'Opening campus wellness resources…', variant: AuroraSnackVariant.success);
+        return;
+      }
+    } catch (_) {/* ignore */}
+    try {
+      if (await canLaunchUrl(hotlineUri)) {
+        await launchUrl(hotlineUri);
+        if (!context.mounted) return;
+        showAuroraSnackBar(context, 'Dialing mental health support…', variant: AuroraSnackVariant.success, icon: Icons.call_rounded);
+        return;
+      }
+    } catch (_) {/* ignore */}
+    // Fallback snackbar if nothing could launch.
+    if (!context.mounted) return;
+    showAuroraSnackBar(context, 'Call $hotlineNumber for mental health support', variant: AuroraSnackVariant.info, icon: Icons.call_rounded);
   }
 }

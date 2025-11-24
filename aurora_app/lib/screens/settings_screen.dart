@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 /// SettingsScreen
-/// Allows editing of core profile fields (display name, birthday with date
-/// picker + age calculation, height, weight). Uses sparse update semantics so
-/// only changed values are sent. All operations surface feedback through
-/// Aurora snackbars.
+/// Core & extended profile editing surface. Upgrades legacy manual date
+/// parsing to intl DateFormat, adds optional fields (pronouns, program,
+/// yearOfStudy, bio) for the course project while keeping sparse update
+/// semantics. All operations surface feedback through Aurora snackbars.
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import '../services/auth_service.dart';
 import '../widgets/aurora_snackbar.dart';
 
@@ -19,9 +20,14 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final _formKey = GlobalKey<FormState>();
   final _displayNameCtrl = TextEditingController();
-  final _birthdayCtrl = TextEditingController(); // yyyy-mm-dd
+  final _birthdayCtrl = TextEditingController(); // yyyy-MM-dd
   final _heightCtrl = TextEditingController(); // cm
   final _weightCtrl = TextEditingController(); // kg
+  final _pronounsCtrl = TextEditingController();
+  final _programCtrl = TextEditingController();
+  final _yearCtrl = TextEditingController(); // academic year
+  final _bioCtrl = TextEditingController(); // short bio/context
+  final DateFormat _dateFormat = DateFormat('yyyy-MM-dd');
   bool _saving = false;
 
   @override
@@ -41,28 +47,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final ts = data['birthday'];
       if (ts is Timestamp) {
         final d = ts.toDate();
-        _birthdayCtrl.text = _fmtDate(d);
+        _birthdayCtrl.text = _dateFormat.format(d);
       }
       final h = data['heightCm'];
       if (h != null) _heightCtrl.text = h.toString();
       final w = data['weightKg'];
       if (w != null) _weightCtrl.text = w.toString();
+      _pronounsCtrl.text = (data['pronouns'] as String?)?.trim() ?? '';
+      _programCtrl.text = (data['program'] as String?)?.trim() ?? '';
+      final yos = data['yearOfStudy'];
+      if (yos != null) _yearCtrl.text = yos.toString();
+      _bioCtrl.text = (data['bio'] as String?)?.trim() ?? '';
       setState(() {});
     }
   }
-
-  String _fmtDate(DateTime d) => '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-
-  /// Parses yyyy-mm-dd into DateTime or returns null if invalid.
-  DateTime? _parseDate(String input) {
+  /// Parses yyyy-MM-dd strictly; enforces boundaries (>=1900, <= today).
+  DateTime? _tryParseDate(String input) {
+    if (input.trim().isEmpty) return null;
     try {
-      if (input.isEmpty) return null;
-      final parts = input.split('-');
-      if (parts.length != 3) return null;
-      final y = int.parse(parts[0]);
-      final m = int.parse(parts[1]);
-      final d = int.parse(parts[2]);
-      return DateTime(y, m, d);
+      final dt = _dateFormat.parseStrict(input.trim());
+      final now = DateTime.now();
+      if (dt.year < 1900 || dt.isAfter(now)) return null;
+      return DateTime(dt.year, dt.month, dt.day);
     } catch (_) {
       return null;
     }
@@ -71,7 +77,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   /// Opens a Material date picker, defaulting to birthday or ~18 years ago.
   Future<void> _pickDate() async {
     final now = DateTime.now();
-    final initialDate = _parseDate(_birthdayCtrl.text) ?? DateTime(now.year - 18, now.month, now.day);
+    final initialDate = _tryParseDate(_birthdayCtrl.text) ?? DateTime(now.year - 18, now.month, now.day);
     final firstDate = DateTime(1900);
     final lastDate = now;
     final picked = await showDatePicker(
@@ -81,7 +87,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       lastDate: lastDate,
     );
     if (picked != null) {
-      _birthdayCtrl.text = _fmtDate(picked);
+      _birthdayCtrl.text = _dateFormat.format(picked);
       setState(() {});
     }
   }
@@ -103,14 +109,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() => _saving = true);
     try {
       final displayName = _displayNameCtrl.text.trim().isEmpty ? null : _displayNameCtrl.text.trim();
-      final birthday = _parseDate(_birthdayCtrl.text);
+      final birthday = _tryParseDate(_birthdayCtrl.text);
       final height = _heightCtrl.text.trim().isEmpty ? null : double.tryParse(_heightCtrl.text.trim());
       final weight = _weightCtrl.text.trim().isEmpty ? null : double.tryParse(_weightCtrl.text.trim());
+      final pronouns = _pronounsCtrl.text.trim().isEmpty ? null : _pronounsCtrl.text.trim();
+      final program = _programCtrl.text.trim().isEmpty ? null : _programCtrl.text.trim();
+      final yearOfStudy = _yearCtrl.text.trim().isEmpty ? null : int.tryParse(_yearCtrl.text.trim());
+      final bio = _bioCtrl.text.trim().isEmpty ? null : _bioCtrl.text.trim();
       await AuthService.instance.updateProfile(
         displayName: displayName,
         birthday: birthday,
         heightCm: height,
         weightKg: weight,
+        pronouns: pronouns,
+        program: program,
+        yearOfStudy: yearOfStudy,
+        bio: bio,
       );
       if (!mounted) return;
       showAuroraSnackBar(context, 'Profile updated', variant: AuroraSnackVariant.success);
@@ -131,12 +145,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _birthdayCtrl.dispose();
     _heightCtrl.dispose();
     _weightCtrl.dispose();
+    _pronounsCtrl.dispose();
+    _programCtrl.dispose();
+    _yearCtrl.dispose();
+    _bioCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final age = _calculateAge(_parseDate(_birthdayCtrl.text));
+    final age = _calculateAge(_tryParseDate(_birthdayCtrl.text));
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings', style: TextStyle(color: Color(0xFF2F2E2C))),
@@ -180,7 +198,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           decoration: const InputDecoration(hintText: 'YYYY-MM-DD'),
                           validator: (v) {
                             if (v == null || v.isEmpty) return null; // optional
-                            return _parseDate(v) == null ? 'Invalid date' : null;
+                            return _tryParseDate(v) == null ? 'Invalid date' : null;
                           },
                         ),
                       ),
@@ -228,6 +246,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
 
                 const SizedBox(height: 24),
+                const Text('Optional Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF2F2E2C))),
+                const SizedBox(height: 12),
+                _LabeledField(
+                  label: 'Pronouns',
+                  child: TextFormField(
+                    controller: _pronounsCtrl,
+                    decoration: const InputDecoration(hintText: 'e.g., she/her, he/him, they/them'),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _LabeledField(
+                  label: 'Program',
+                  child: TextFormField(
+                    controller: _programCtrl,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(hintText: 'e.g., Computer Science'),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _LabeledField(
+                  label: 'Year of Study',
+                  child: TextFormField(
+                    controller: _yearCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(signed: false, decimal: false),
+                    decoration: const InputDecoration(hintText: 'e.g., 2'),
+                    validator: (v) {
+                      if (v == null || v.isEmpty) return null;
+                      final n = int.tryParse(v);
+                      if (n == null || n < 1 || n > 10) return 'Enter 1-10';
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _LabeledField(
+                  label: 'Bio / Context',
+                  child: TextFormField(
+                    controller: _bioCtrl,
+                    maxLines: 3,
+                    decoration: const InputDecoration(hintText: 'Short bio or notes (optional)'),
+                    validator: (v) {
+                      if (v != null && v.length > 300) return 'Max 300 chars';
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 28),
 
                 SizedBox(
                   width: double.infinity,

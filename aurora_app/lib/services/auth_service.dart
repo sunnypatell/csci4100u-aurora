@@ -72,7 +72,17 @@ class AuthService {
 
   /// Updates Firestore profile & (optionally) FirebaseAuth display name.
   /// Only non-null parameters are persisted.
-  Future<void> updateProfile({String? displayName, DateTime? birthday, double? heightCm, double? weightKg}) async {
+  /// Extended with optional demographic / context fields for course project.
+  Future<void> updateProfile({
+    String? displayName,
+    DateTime? birthday,
+    double? heightCm,
+    double? weightKg,
+    String? pronouns,
+    String? program,
+    int? yearOfStudy,
+    String? bio,
+  }) async {
     final user = _auth.currentUser;
     if (user == null) throw FirebaseAuthException(code: 'no-user', message: 'Not signed in');
     try {
@@ -95,9 +105,11 @@ class AuthService {
       if (heightCm != null) {
         updateData['heightCm'] = heightCm;
       }
-      if (weightKg != null) {
-        updateData['weightKg'] = weightKg;
-      }
+      if (weightKg != null) updateData['weightKg'] = weightKg;
+      if (pronouns != null && pronouns.trim().isNotEmpty) updateData['pronouns'] = pronouns.trim();
+      if (program != null && program.trim().isNotEmpty) updateData['program'] = program.trim();
+      if (yearOfStudy != null) updateData['yearOfStudy'] = yearOfStudy;
+      if (bio != null && bio.trim().isNotEmpty) updateData['bio'] = bio.trim();
 
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set(updateData, SetOptions(merge: true));
     } on FirebaseException {

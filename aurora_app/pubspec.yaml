@@ -50,7 +50,6 @@ dependencies:
   geolocator: ^9.0.2
   flutter_map_marker_cluster: ^1.2.0
 
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

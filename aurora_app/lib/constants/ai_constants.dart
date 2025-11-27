@@ -1,6 +1,15 @@
-/// ai_constants.dart
-/// Simple constants for Gemini API integration. Keys are hardcoded per grading
-/// requirements; do NOT use these in production.
+// ai_constants.dart
+// Centralized constants for Gemini integration.
+//
+// SECURITY NOTE: The API key here is deliberately hardcoded ONLY for course
+// grading convenience. In any real deployment:
+// - Never commit raw API keys.
+// - Use secure remote config / secret manager (Firebase Remote Config,
+//   environment variables, or a backend token proxy).
+// - Rotate keys regularly and scope permissions minimally.
+//
+// Keep this file tiny and dependency-free so it can be swapped out easily
+// with a secure loader later.
 
 class AiConstants {
   static const String geminiBaseUrl =

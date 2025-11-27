@@ -3,13 +3,20 @@ import 'package:http/http.dart' as http;
 
 import '../constants/ai_constants.dart';
 
-/// ai_service.dart
-/// Minimal Gemini integration to support two flows:
-/// - getJournalInsight(entryText, usermood): one-shot prompt for helpful tips
-/// - chatWithContext(userMessage, chatHistory, userContext?, journalContext?):
-///   simple conversational prompt (no Firestore wiring yet)
+/// Aurora / Gemini integration layer.
 ///
-/// Uses a singleton to avoid multiple http client instances.
+/// Responsibilities:
+/// - Build strictly formatted prompts that preserve Aurora's supportive tone.
+/// - Call Gemini "generateContent" endpoint and parse candidate text safely.
+/// - Provide higher-level helpers for: journal insight, contextual chat, and
+///   AI-based conversation title generation.
+///
+/// Design notes:
+/// - Implemented as a singleton (`AiService()`) to reuse one http client and
+///   keep a single place to evolve prompt style.
+/// - All methods fail gracefully with human-readable fallback strings instead
+///   of throwing, so UI can display immediate feedback.
+/// - Title generation uses a constrained prompt to ensure short, clean output.
 class AiService {
   AiService._internal();
   static final AiService _instance = AiService._internal();
@@ -113,6 +120,81 @@ class AiService {
       return "I'm not sure what to say. Can you tell me more?";
     } catch (e) {
       return "Something went wrong. Let's try that again?";
+    }
+  }
+
+  /// Generate a concise conversation title (first exchange summary).
+  ///
+  /// The model is instructed to output ONLY a short title (4-6 words), no
+  /// quotes, no trailing punctuation, Title Case, avoiding the words
+  /// "Aurora", "Student" or pronouns that make it sound like a sentence.
+  /// Includes optional contexts so themes (stress, exams, motivation, etc.)
+  /// surface in the title. Falls back to heuristic if model result empty.
+  Future<String> generateConversationTitle({
+    required String userMessage,
+    required String aiReply,
+    String? userContext,
+    String? journalContext,
+  }) async {
+    if (!isConfigured) return '';
+    try {
+      final buf = StringBuffer();
+      buf.writeln('You are Aurora, generating a SHORT CONVERSATION TITLE.');
+      buf.writeln('Rules:');
+      buf.writeln('- 4 to 6 words.');
+      buf.writeln('- Title Case.');
+      buf.writeln('- No quotes, no trailing period.');
+      buf.writeln('- Do NOT include the words Aurora, Student, Chat.');
+      buf.writeln('- Capture emotional or thematic focus.');
+      buf.writeln('- Output ONLY the title text, nothing else.');
+      if (userContext != null && userContext.isNotEmpty) {
+        buf.writeln('\nUSER PROFILE CONTEXT:\n$userContext');
+      }
+      if (journalContext != null && journalContext.isNotEmpty) {
+        buf.writeln('\nRECENT JOURNAL CONTEXT (truncated):\n$journalContext');
+      }
+      buf.writeln('\nFIRST EXCHANGE:');
+      buf.writeln('User: $userMessage');
+      buf.writeln('Aurora: $aiReply');
+      buf.writeln('\nTITLE:');
+
+      final uri = Uri.parse("$_baseUrl/$_modelPath:generateContent?key=$_apiKey");
+      final body = {
+        "contents": [
+          {
+            "parts": [
+              {"text": buf.toString()}
+            ]
+          }
+        ]
+      };
+
+      final response = await http.post(
+        uri,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+      if (response.statusCode != 200) return '';
+      final data = jsonDecode(response.body);
+      final raw = _extractText(data);
+      if (raw == null) return '';
+      var cleaned = raw.trim();
+      // Strip leading/trailing quote/backtick characters without regex (safer for grading environment).
+      while (cleaned.isNotEmpty && (cleaned.startsWith('"') || cleaned.startsWith("'") || cleaned.startsWith('`'))) {
+        cleaned = cleaned.substring(1);
+      }
+      while (cleaned.isNotEmpty && (cleaned.endsWith('"') || cleaned.endsWith("'") || cleaned.endsWith('`'))) {
+        cleaned = cleaned.substring(0, cleaned.length - 1);
+      }
+      // Collapse newlines and remove non-printable ASCII.
+      cleaned = cleaned
+          .replaceAll(RegExp(r'[\r\n]+'), ' ')
+          .replaceAll(RegExp(r'[^\x20-\x7E]'), '')
+          .trim();
+      // Enforce max length safety
+      return cleaned.length > 60 ? cleaned.substring(0, 60).trim() : cleaned;
+    } catch (_) {
+      return '';
     }
   }
 

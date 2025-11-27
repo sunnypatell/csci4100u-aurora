@@ -14,7 +14,7 @@ import 'settings_screen.dart';
 import 'journal_screen.dart';
 import 'resources.dart';
 import 'help_near_me.dart';
-import 'chat.dart';
+import 'ai_chat.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -163,11 +163,11 @@ class DashboardScreen extends StatelessWidget {
                         ),
                       ),
                       _ActionTile(
-                        icon: Icons.forum_outlined,
-                        titleBuilder: (w) => w <= 360 ? 'Buddy Chat' : 'Chat with a Buddy',
-                        subtitle: 'Community check-in',
+                        icon: Icons.psychology_alt_outlined,
+                        titleBuilder: (w) => w <= 360 ? 'Aurora Chat' : 'Chat with Aurora',
+                        subtitle: 'Supportive AI companion',
                         onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const CommunityChatPage()),
+                          MaterialPageRoute(builder: (_) => const AiChatScreen()),
                         ),
                       ),
                     ]),

@@ -1,12 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-/// HelpNearMePage
-/// Presents a (currently placeholder) map region along with a curated list of
-/// Canadian crisis / support helplines. Future enhancement: replace static
-/// image with live GoogleMap + geolocation + nearby services search.
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
 
+/// HelpNearMePage
+/// Now uses an interactive map (flutter_map + OpenStreetMap)
+/// with user location and a marker layer, instead of a static image.
 class HelpNearMePage extends StatelessWidget {
   const HelpNearMePage({super.key});
+
+  // Default fallback (Toronto) if location is unavailable/denied.
+  static const LatLng _fallbackCenter = LatLng(43.6532, -79.3832);
+
+  // Fetch user location with permission handling, but gracefully fall back.
+  Future<LatLng> _getInitialCenter() async {
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        // Location services off → fallback
+        return _fallbackCenter;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        // Permissions denied → fallback
+        return _fallbackCenter;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      return LatLng(position.latitude, position.longitude);
+    } catch (_) {
+      // Any error → fallback
+      return _fallbackCenter;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,33 +60,96 @@ class HelpNearMePage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Map placeholder image
-          Container(
-            margin: const EdgeInsets.all(16),
-            height: 240,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.grey.shade300,
-              image: const DecorationImage(
-                image: AssetImage('assets/images/aurora_image.jpeg'),
-                fit: BoxFit.cover,
-              ),
-            ),
-            alignment: Alignment.center,
-            child: Container(
-              color: Colors.black.withValues(alpha: 0.25),
-              child: const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  'Nearby Hospitals & Support Centres',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
+          // 🔍 Interactive Map Region
+          FutureBuilder<LatLng>(
+            future: _getInitialCenter(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Container(
+                  margin: const EdgeInsets.all(16),
+                  height: 240,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.grey.shade300,
                   ),
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
+              final center = snapshot.data ?? _fallbackCenter;
+
+              return Container(
+                margin: const EdgeInsets.all(16),
+                height: 240,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.grey.shade300,
                 ),
-              ),
-            ),
+                clipBehavior: Clip.antiAlias,
+                child: Stack(
+                  children: [
+                    FlutterMap(
+                      options: MapOptions(
+                        center: center,
+                        zoom: 13,
+                        interactiveFlags: InteractiveFlag.all &
+                            ~InteractiveFlag.rotate, // disable rotation
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.example.aurora',
+                        ),
+
+                        // 🧿 Marker layer – currently just user location.
+                        // Future: add hospital/support markers here.
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              point: center,
+                              width: 40,
+                              height: 40,
+                              builder: (ctx) => const Icon(
+                                Icons.person_pin_circle,
+                                size: 36,
+                                color: Colors.redAccent,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+
+                    // Overlay label at top
+                    Align(
+                      alignment: Alignment.topCenter,
+                    child: Container(
+                      margin: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'Nearby Hospitals & Support Centres',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
 
           const Padding(

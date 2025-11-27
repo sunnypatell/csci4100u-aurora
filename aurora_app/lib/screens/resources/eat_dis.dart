@@ -1,7 +1,6 @@
 // eat_dis.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // Aurora snackbars
@@ -137,7 +136,7 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Journal space",
+              const Text("Journal space",
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 18,
@@ -200,7 +199,9 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
 
     try {
       if (await canLaunchUrl(uri)) {
+        if (!context.mounted) return;
         await launchUrl(uri);
+        if (!context.mounted) return;
         showAuroraSnackBar(
           context,
           "Dialing support…",
@@ -209,7 +210,8 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
         return;
       }
     } catch (_) {}
-
+    
+    if (!context.mounted) return;
     showAuroraSnackBar(
       context,
       "Call $hotline for support 💙",
@@ -273,7 +275,7 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
               // ---------------------------
               // FOOD FACTS
               // ---------------------------
-              Text(
+              const Text(
                 "Gentle food & body facts",
                 style: TextStyle(
                   fontSize: 18,
@@ -291,23 +293,23 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
                   key: ValueKey(_foodFactIndex),
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.55),
+                    color: Colors.white.withValues(alpha: .55),
                     borderRadius: BorderRadius.circular(22),
                     border: Border.all(
-                      color: Color(0xFFCFB4F5).withOpacity(0.7),
+                      color: const Color(0xFFCFB4F5).withValues(alpha: 0.7),
                       width: 1.2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Color(0xFFB18CE0).withOpacity(0.15),
+                        color: const Color(0xFFB18CE0).withValues(alpha: 0.15),
                         blurRadius: 14,
-                        offset: Offset(0, 6),
+                        offset: const Offset(0, 6),
                       ),
                     ],
                   ),
                   child: Text(
                     _foodFacts[_foodFactIndex],
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontStyle: FontStyle.italic,
                       color: Color(0xFF6F6580),
                     ),
@@ -320,7 +322,7 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
               // ---------------------------
               // MEAL TIMER
               // ---------------------------
-              Text(
+              const Text(
                 "Meal support timer",
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
@@ -337,7 +339,7 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
               // ---------------------------
               // JOURNAL PROMPTS
               // ---------------------------
-              Text(
+              const Text(
                 "Gentle journal prompts",
                 style: TextStyle(
                   fontSize: 18,
@@ -373,21 +375,21 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.55),
+        color: Colors.white.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: Color(0xFFD5C1FA).withOpacity(0.7)),
+        border: Border.all(color: const Color(0xFFD5C1FA).withValues(alpha: 0.7)),
         boxShadow: [
           BoxShadow(
-            color: Color(0xFFCE9EEF).withOpacity(0.18),
+            color: const Color(0xFFCE9EEF).withValues(alpha: 0.18),
             blurRadius: 14,
-            offset: Offset(0, 8),
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             "Choose how long you’d like gentle support during a meal or snack.",
             style: TextStyle(
               color: Color(0xFF6F6580),
@@ -469,16 +471,16 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.48),
+            color: Colors.white.withValues(alpha: 0.48),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: const Color(0xFFCDBDF4).withOpacity(0.8),
+              color: const Color(0xFFCDBDF4).withValues(alpha: 0.8),
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFB18CE0).withOpacity(0.12),
+                color: const Color(0xFFB18CE0).withValues(alpha: 0.12),
                 blurRadius: 12,
-                offset: Offset(0, 5),
+                offset: const Offset(0, 5),
               ),
             ],
           ),

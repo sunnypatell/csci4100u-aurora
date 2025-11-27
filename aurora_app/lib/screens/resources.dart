@@ -208,7 +208,7 @@ class _ResourcesPageState extends State<ResourcesPage>
                               gradientB: Colors.purple.shade200
                                   .withValues(alpha: 0.35),
                               onTap: () =>
-                                  _open(context, EatingDisordersHelpPage()),
+                                  _open(context, const EatingDisordersHelpPage()),
                             ),
                             ResourceCard(
                               title: "ADHD Help",

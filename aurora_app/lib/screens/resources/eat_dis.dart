@@ -15,13 +15,11 @@ class EatingDisordersHelpPage extends StatefulWidget {
 }
 
 class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
-  // -----------------------------
-  // FOOD FACT ROTATION
-  // -----------------------------
+  // food facts cards
   final List<String> _foodFacts = [
-    "Carbohydrates are your brain’s main energy source — eating them helps you think clearly and focus.",
+    "Carbohydrates are your brain’s main energy source, eating them helps you think clearly and focus.",
     "Regular meals support your nervous system, making emotions feel a little more manageable.",
-    "Fats help protect your organs and support hormone balance — your body needs them to function.",
+    "Fats help protect your organs and support hormone balance, your body needs them to function.",
     "Protein helps repair muscles, supports your immune system, and keeps you feeling steady and grounded.",
     "Micronutrients from fruits and vegetables help your brain and body recover from stress.",
     "Even small snacks can stabilize blood sugar, reducing anxiety, dizziness, and brain fog.",
@@ -40,9 +38,7 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
     );
   }
 
-  // -----------------------------
-  // MEAL TIMER
-  // -----------------------------
+  // meal timer
   double _mealTimerMinutes = 3;
   double _mealTimerTotalSeconds = 0;
   double _mealTimerRemainingSeconds = 0;
@@ -106,13 +102,11 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
     });
   }
 
-  // -----------------------------
-  // JOURNAL PROMPTS
-  // -----------------------------
+  // journal prompts
   final List<String> _journalPrompts = [
     "What is one kind thing you can say to your body today?",
     "Think of a time food felt comforting rather than scary. What was happening?",
-    "What does your body need from you right now — physically, emotionally, or mentally?",
+    "What does your body need from you right now? Physically, Emotionally, or Mentally?",
     "What would you say to a friend who was struggling with food the way you are?",
     "Name three things your body lets you experience that you enjoy.",
   ];
@@ -136,7 +130,7 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Journal space",
+              Text("Journal space",
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 18,
@@ -190,18 +184,14 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
     );
   }
 
-  // -----------------------------
-  // SUPPORT HOTLINE
-  // -----------------------------
+  // launch eating disorder support hotline
   Future<void> _launchEatingDisorderSupport(BuildContext context) async {
     const hotline = "+1-866-531-2600";
     final uri = Uri(scheme: "tel", path: hotline);
 
     try {
       if (await canLaunchUrl(uri)) {
-        if (!context.mounted) return;
         await launchUrl(uri);
-        if (!context.mounted) return;
         showAuroraSnackBar(
           context,
           "Dialing support…",
@@ -210,8 +200,7 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
         return;
       }
     } catch (_) {}
-    
-    if (!context.mounted) return;
+
     showAuroraSnackBar(
       context,
       "Call $hotline for support 💙",
@@ -219,9 +208,6 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
     );
   }
 
-  // -----------------------------
-  // INIT + DISPOSE
-  // -----------------------------
   @override
   void initState() {
     super.initState();
@@ -235,9 +221,7 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
     super.dispose();
   }
 
-  // -----------------------------
-  // ✨ MAIN UI — BLUSH-LAVENDER AESTHETIC
-  // -----------------------------
+  // ui  design - pink and lavender gradient background
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -272,10 +256,8 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
             children: [
-              // ---------------------------
-              // FOOD FACTS
-              // ---------------------------
-              const Text(
+              // food facts
+              Text(
                 "Gentle food & body facts",
                 style: TextStyle(
                   fontSize: 18,
@@ -293,23 +275,23 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
                   key: ValueKey(_foodFactIndex),
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: .55),
+                    color: Colors.white.withOpacity(0.55),
                     borderRadius: BorderRadius.circular(22),
                     border: Border.all(
-                      color: const Color(0xFFCFB4F5).withValues(alpha: 0.7),
+                      color: Color(0xFFCFB4F5).withOpacity(0.7),
                       width: 1.2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFB18CE0).withValues(alpha: 0.15),
+                        color: Color(0xFFB18CE0).withOpacity(0.15),
                         blurRadius: 14,
-                        offset: const Offset(0, 6),
+                        offset: Offset(0, 6),
                       ),
                     ],
                   ),
                   child: Text(
                     _foodFacts[_foodFactIndex],
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontStyle: FontStyle.italic,
                       color: Color(0xFF6F6580),
                     ),
@@ -319,10 +301,8 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
 
               const SizedBox(height: 32),
 
-              // ---------------------------
-              // MEAL TIMER
-              // ---------------------------
-              const Text(
+              // meal timer
+              Text(
                 "Meal support timer",
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
@@ -336,10 +316,8 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
 
               const SizedBox(height: 32),
 
-              // ---------------------------
-              // JOURNAL PROMPTS
-              // ---------------------------
-              const Text(
+              // journal prompts
+              Text(
                 "Gentle journal prompts",
                 style: TextStyle(
                   fontSize: 18,
@@ -368,28 +346,26 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
     );
   }
 
-  // -----------------------------
-  // Helper UI Widgets
-  // -----------------------------
+//widgets
   Widget _buildMealTimerCard() {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.55),
+        color: Colors.white.withOpacity(0.55),
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: const Color(0xFFD5C1FA).withValues(alpha: 0.7)),
+        border: Border.all(color: Color(0xFFD5C1FA).withOpacity(0.7)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFCE9EEF).withValues(alpha: 0.18),
+            color: Color(0xFFCE9EEF).withOpacity(0.18),
             blurRadius: 14,
-            offset: const Offset(0, 8),
+            offset: Offset(0, 8),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Choose how long you’d like gentle support during a meal or snack.",
             style: TextStyle(
               color: Color(0xFF6F6580),
@@ -471,16 +447,16 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.48),
+            color: Colors.white.withOpacity(0.48),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: const Color(0xFFCDBDF4).withValues(alpha: 0.8),
+              color: const Color(0xFFCDBDF4).withOpacity(0.8),
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFB18CE0).withValues(alpha: 0.12),
+                color: const Color(0xFFB18CE0).withOpacity(0.12),
                 blurRadius: 12,
-                offset: const Offset(0, 5),
+                offset: Offset(0, 5),
               ),
             ],
           ),

@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../widgets/aurora_snackbar.dart';
 import '../services/remote_resource_service.dart';
 import '../screens/resources/eat_dis.dart';
+import 'resources/adhd_help.dart';
 
 /// Entry widget (use in your routes or Navigator.push)
 class ResourcesPage extends StatefulWidget {
@@ -545,26 +546,6 @@ class _QuoteCard extends StatelessWidget {
 }
 
 /* --------------------------- Destination pages --------------------------- */
-/* Replace the placeholder bodies with your actual content (articles, links,
-   exercises, hotlines, StreamBuilders to Firestore, etc.) */
-
-class ADHDHelpPage extends StatelessWidget {
-  const ADHDHelpPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const _SimpleHelpScaffold(
-      title: "ADHD Help",
-      emoji: "🧠",
-      bullets: [
-        "Two-minute start: pick one tiny action and begin.",
-        "Body-double timer and noise options.",
-        "Task-break-reward cycles and routine builders.",
-      ],
-      accent: Colors.green,
-    );
-  }
-}
 
 class AnxietyDepressionHelpPage extends StatelessWidget {
   const AnxietyDepressionHelpPage({super.key});

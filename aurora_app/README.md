@@ -57,6 +57,7 @@ Sunny has implemented the foundational infrastructure portions of the applicatio
 | Notification & Reminder System | Expanded notification service: timezone init, permission requests (Android/iOS/macOS), Android channel creation, persistent daily journal reminder scheduling, instant & one-off notifications, tap payload handler. Integrated auto scheduling at app start and after successful journal save. | `lib/services/notifications_service.dart`, `lib/main.dart`, `lib/screens/journal_screen.dart` | Foundation for future wellness nudges & behavioral habit formation. |
 | Min SDK Update | Adjusted Android `minSdk` to 23 for Firebase Auth compatibility; enabled predictive back callback for Android 13+. | `android/app/build.gradle`, `android/app/src/main/AndroidManifest.xml` | Resolves build error & improves navigation UX. |
 | HTTP Remote Quote Fetch | `RemoteResourceService` now uses RealInspire public endpoint (no key, CORS safe) to load a random encouragement quote with fallback list & refresh UI. | `lib/services/remote_resource_service.dart`, `lib/screens/resources.dart` | External API consumption & resilient network handling. |
+| Aurora AI Contextual Chat | Built on original prototype by integrating journal + profile context fusion, persistent Firestore conversations with one-time AI title generation, rich markdown-style rendering, and editable conversation titles. | `lib/screens/ai_chat.dart`, `lib/services/ai_service.dart` | Elevates supportive chat with personalized, persistent, formatted experience. |
 
 ## Running the App
 

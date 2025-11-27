@@ -72,7 +72,8 @@ aurora_app/
 ## Quick Start (Windows PowerShell)
 ```powershell
 # 1. Clone
-git clone https://github.com/sunnypatell/csci4100u-aurora.git; cd csci4100u-aurora/aurora_app
+git clone https://github.com/sunnypatell/csci4100u-aurora.git
+cd csci4100u-aurora/aurora_app
 
 # 2. Flutter dependencies
 flutter pub get

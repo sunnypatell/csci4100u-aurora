@@ -246,6 +246,12 @@ class _AiChatScreenState extends State<AiChatScreen> {
             icon: const Icon(Icons.add_circle_outline, color: ink),
             onPressed: _startNewConversation,
           ),
+          if (_conversationId != null)
+            IconButton(
+              tooltip: 'Edit title',
+              icon: const Icon(Icons.edit, color: ink),
+              onPressed: _editConversationTitle,
+            ),
           IconButton(
             tooltip: 'History',
             icon: const Icon(Icons.history_edu_rounded, color: ink),
@@ -450,12 +456,24 @@ class _AiChatScreenState extends State<AiChatScreen> {
                       Navigator.pop(context);
                       await _loadConversation(d.id);
                     },
-                    trailing: IconButton(
-                      tooltip: 'Delete',
-                      icon: const Icon(Icons.delete_outline),
-                      onPressed: () async {
-                        await _deleteConversation(d.id);
-                      },
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          tooltip: 'Edit title',
+                          icon: const Icon(Icons.edit_outlined),
+                          onPressed: () async {
+                            await _editSpecificConversationTitle(d.id, title);
+                          },
+                        ),
+                        IconButton(
+                          tooltip: 'Delete',
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: () async {
+                            await _deleteConversation(d.id);
+                          },
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -479,11 +497,13 @@ class _AiChatScreenState extends State<AiChatScreen> {
   Future<void> _loadConversation(String convId) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
-    final q = await FirebaseFirestore.instance
+    final convRef = FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
         .collection('aiConversations')
-        .doc(convId)
+        .doc(convId);
+    final convSnap = await convRef.get();
+    final q = await convRef
         .collection('messages')
         .orderBy('createdAt')
         .get();
@@ -495,6 +515,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
       _messages
         ..clear()
         ..addAll(msgs);
+      _conversationTitle = (convSnap.data()?['title'] as String?) ?? _conversationTitle;
     });
   }
 
@@ -511,6 +532,61 @@ class _AiChatScreenState extends State<AiChatScreen> {
       await m.reference.delete();
     }
     await convRef.delete();
+  }
+
+  Future<void> _editConversationTitle() async {
+    if (_conversationId == null) return;
+    final controller = TextEditingController(text: _conversationTitle ?? '');
+    final newTitle = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Conversation Title'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Enter title'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('Save')),
+        ],
+      ),
+    );
+    if (newTitle == null || newTitle.isEmpty) return;
+    await _setConversationTitle(newTitle);
+  }
+
+  Future<void> _editSpecificConversationTitle(String convId, String currentTitle) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final controller = TextEditingController(text: currentTitle);
+    final newTitle = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Conversation Title'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Enter title'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('Save')),
+        ],
+      ),
+    );
+    if (newTitle == null || newTitle.isEmpty) return;
+    final convRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('aiConversations')
+        .doc(convId);
+    await convRef.set({'title': newTitle, 'updatedAt': FieldValue.serverTimestamp()}, SetOptions(merge: true));
+    if (_conversationId == convId) {
+      setState(() {
+        _conversationTitle = newTitle;
+      });
+    }
   }
 
 }

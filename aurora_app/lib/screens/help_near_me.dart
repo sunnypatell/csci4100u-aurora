@@ -3,15 +3,189 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 
 /// HelpNearMePage
 /// Now uses an interactive map (flutter_map + OpenStreetMap)
 /// with user location and a marker layer, instead of a static image.
-class HelpNearMePage extends StatelessWidget {
+class HelpNearMePage extends StatefulWidget {
   const HelpNearMePage({super.key});
+
+  @override
+  State<HelpNearMePage> createState() => _HelpNearMePageState();
+}
+
+class _HelpNearMePageState extends State<HelpNearMePage> {
+  final MapController _mapController = MapController();
+  LatLng? _center;
+  bool _loading = true;
+  List<Map<String, dynamic>> _nearbyPois = [];
+  List<Marker> _poiMarkers = [];
+  final TextEditingController _searchController = TextEditingController();
+  List<Map<String, dynamic>> _searchResults = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initLocationAndPois();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initLocationAndPois() async {
+    final LatLng center = await _getInitialCenter();
+    _computeNearbyPois(center);
+    setState(() {
+      _center = center;
+      _loading = false;
+    });
+  }
+
+  void _computeNearbyPois(LatLng center) {
+    final List<Map<String, dynamic>> nearby = [];
+    final List<Marker> markers = [];
+    for (final poi in _samplePois) {
+      final double poiLat = poi['lat'] as double;
+      final double poiLng = poi['lng'] as double;
+      final double distanceMeters = Geolocator.distanceBetween(
+        center.latitude,
+        center.longitude,
+        poiLat,
+        poiLng,
+      );
+      if (distanceMeters <= 50000) {
+        nearby.add(poi);
+        markers.add(
+          Marker(
+            point: LatLng(poiLat, poiLng),
+            width: 36,
+            height: 36,
+            builder: (ctx) => GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: ctx,
+                  builder: (dctx) => AlertDialog(
+                    title: Text(poi['name'] as String),
+                    content: Text(
+                        'Distance: ${(distanceMeters / 1000).toStringAsFixed(1)} km'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(dctx).pop(),
+                        child: const Text('Close'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              child: const Icon(
+                Icons.local_hospital,
+                size: 28,
+                color: Colors.blue,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    _nearbyPois = nearby;
+    _poiMarkers = markers;
+    _searchResults = List<Map<String, dynamic>>.from(nearby);
+  }
+
+  void _onSearchChanged(String q) {
+    final query = q.trim().toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        _searchResults = List<Map<String, dynamic>>.from(_nearbyPois);
+      } else {
+        _searchResults = _nearbyPois
+            .where((p) => (p['name'] as String).toLowerCase().contains(query))
+            .toList();
+      }
+    });
+  }
+
+  void _onSelectSearchResult(Map<String, dynamic> poi) {
+    final LatLng target = LatLng(poi['lat'] as double, poi['lng'] as double);
+    _mapController.move(target, 15);
+    setState(() {
+      _searchController.text = poi['name'] as String;
+      _searchResults = [poi];
+    });
+  }
 
   // Default fallback (Toronto) if location is unavailable/denied.
   static const LatLng _fallbackCenter = LatLng(43.6532, -79.3832);
+
+  // Sample POIs (hospitals/support centres) — expandable and used for nearby filtering.
+  // Expanded POI list (all within ~50km of downtown Toronto)
+  static const List<Map<String, dynamic>> _samplePois = [
+    {
+      'name': 'Toronto General Hospital',
+      'lat': 43.6577,
+      'lng': -79.3865,
+    },
+    {
+      'name': 'Mississauga Hospital',
+      'lat': 43.5904,
+      'lng': -79.6406,
+    },
+    {
+      'name': 'Trillium Health Partners - Credit Valley',
+      'lat': 43.5657,
+      'lng': -79.6506,
+    },
+    {
+      'name': 'Brampton Civic Hospital',
+      'lat': 43.6900,
+      'lng': -79.7606,
+    },
+    {
+      'name': 'Humber River Hospital',
+      'lat': 43.7545,
+      'lng': -79.5107,
+    },
+    {
+      'name': 'William Osler Health Centre',
+      'lat': 43.7007,
+      'lng': -79.7625,
+    },
+    {
+      'name': "St. Michael's Hospital",
+      'lat': 43.6531,
+      'lng': -79.3754,
+    },
+    {
+      'name': 'Sunnybrook Health Sciences Centre',
+      'lat': 43.7256,
+      'lng': -79.3644,
+    },
+    {
+      'name': 'Mount Sinai Hospital',
+      'lat': 43.6591,
+      'lng': -79.3909,
+    },
+    {
+      'name': 'North York General Hospital',
+      'lat': 43.7486,
+      'lng': -79.4101,
+    },
+    {
+      'name': 'Centre for Addiction and Mental Health (CAMH)',
+      'lat': 43.6532,
+      'lng': -79.4025,
+    },
+    {
+      'name': "Women's College Hospital",
+      'lat': 43.6675,
+      'lng': -79.3986,
+    },
+  ];
 
   // Fetch user location with permission handling, but gracefully fall back.
   Future<LatLng> _getInitialCenter() async {
@@ -60,72 +234,137 @@ class HelpNearMePage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // 🔍 Interactive Map Region
-          FutureBuilder<LatLng>(
-            future: _getInitialCenter(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Container(
-                  margin: const EdgeInsets.all(16),
-                  height: 240,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: Colors.grey.shade300,
-                  ),
-                  child: const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                );
-              }
-
-              final center = snapshot.data ?? _fallbackCenter;
-
-              return Container(
-                margin: const EdgeInsets.all(16),
-                height: 240,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  color: Colors.grey.shade300,
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Stack(
-                  children: [
-                    FlutterMap(
-                      options: MapOptions(
-                        center: center,
-                        zoom: 13,
-                        interactiveFlags: InteractiveFlag.all &
-                            ~InteractiveFlag.rotate, // disable rotation
-                      ),
-                      children: [
-                        TileLayer(
-                          urlTemplate:
-                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName: 'com.example.aurora',
-                        ),
-
-                        // 🧿 Marker layer – currently just user location.
-                        // Future: add hospital/support markers here.
-                        MarkerLayer(
-                          markers: [
-                            Marker(
-                              point: center,
-                              width: 40,
-                              height: 40,
-                              builder: (ctx) => const Icon(
-                                Icons.person_pin_circle,
-                                size: 36,
-                                color: Colors.redAccent,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+          // Search bar above map
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _searchController,
+                  onChanged: _onSearchChanged,
+                  decoration: InputDecoration(
+                    hintText: 'Search nearby hospitals & support centres',
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
+                  ),
+                ),
+                if (_searchController.text.isNotEmpty && _searchResults.isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListView.builder(
+                      itemCount: _searchResults.length,
+                      itemBuilder: (context, idx) {
+                        final poi = _searchResults[idx];
+                        return ListTile(
+                          title: Text(poi['name'] as String),
+                          onTap: () => _onSelectSearchResult(poi),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
 
-                    // Overlay label at top
-                    Align(
-                      alignment: Alignment.topCenter,
+          // 🔍 Interactive Map Region
+          if (_loading)
+            Container(
+              margin: const EdgeInsets.all(16),
+              height: 240,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: Colors.grey.shade300,
+              ),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else
+            Container(
+              margin: const EdgeInsets.all(16),
+              height: 360,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: Colors.grey.shade300,
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                children: [
+                  FlutterMap(
+                    mapController: _mapController,
+                    options: MapOptions(
+                      center: _center,
+                      zoom: 13,
+                      interactiveFlags: InteractiveFlag.all &
+                          ~InteractiveFlag.rotate, // disable rotation
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.aurora',
+                      ),
+
+                      // User marker
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: _center!,
+                            width: 44,
+                            height: 44,
+                            builder: (ctx) => const Icon(
+                              Icons.my_location,
+                              size: 36,
+                              color: Colors.redAccent,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Clustered POIs
+                      MarkerClusterLayerWidget(
+                        options: MarkerClusterLayerOptions(
+                          maxClusterRadius: 45,
+                          size: const Size(40, 40),
+                          fitBoundsOptions: const FitBoundsOptions(
+                            padding: EdgeInsets.all(50),
+                          ),
+                          markers: _poiMarkers,
+                          builder: (context, markers) {
+                            return Container(
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withValues(alpha: 0.9),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                markers.length.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Overlay label at top
+                  Align(
+                    alignment: Alignment.topCenter,
                     child: Container(
                       margin: const EdgeInsets.all(8),
                       padding: const EdgeInsets.symmetric(
@@ -145,12 +384,10 @@ class HelpNearMePage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+                  ),
+                ],
+              ),
+            ),
 
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),

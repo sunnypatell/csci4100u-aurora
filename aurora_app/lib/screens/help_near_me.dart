@@ -5,9 +5,18 @@ import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 
-/// HelpNearMePage
-/// Now uses an interactive map (flutter_map + OpenStreetMap)
-/// with user location and a marker layer, instead of a static image.
+/// help_near_me.dart
+/// Context-aware support map screen: renders an interactive OpenStreetMap
+/// (via `flutter_map`) centered on the user, clusters nearby hospitals/support
+/// POIs, and provides a simple search to pan/zoom to results. Below the map,
+/// curated helpline actions are provided for quick access.
+///
+/// Key bits:
+/// - Location fallback to Toronto if permissions/services are unavailable.
+/// - Marker clustering using `flutter_map_marker_cluster` for readability.
+/// - Lightweight in-memory POI list filtered within ~50km of the user.
+/// - Search input narrows POIs and recenters the map on selection.
+/// - Helpline tiles use `url_launcher` for dial/web actions.
 class HelpNearMePage extends StatefulWidget {
   const HelpNearMePage({super.key});
 
@@ -36,6 +45,10 @@ class _HelpNearMePageState extends State<HelpNearMePage> {
     super.dispose();
   }
 
+  /// Initializes screen state:
+  /// - Resolves initial map center (user location or fallback)
+  /// - Computes nearby POIs and their markers
+  /// - Lifts loading indicator once ready
   Future<void> _initLocationAndPois() async {
     final LatLng center = await _getInitialCenter();
     _computeNearbyPois(center);
@@ -45,6 +58,8 @@ class _HelpNearMePageState extends State<HelpNearMePage> {
     });
   }
 
+  /// Computes nearby points of interest (POIs) within 50km of `center`,
+  /// materializes clustered marker widgets, and seeds the search results.
   void _computeNearbyPois(LatLng center) {
     final List<Map<String, dynamic>> nearby = [];
     final List<Marker> markers = [];
@@ -97,6 +112,7 @@ class _HelpNearMePageState extends State<HelpNearMePage> {
     _searchResults = List<Map<String, dynamic>>.from(nearby);
   }
 
+  /// Search input handler: updates `_searchResults` by name substring (case-insensitive).
   void _onSearchChanged(String q) {
     final query = q.trim().toLowerCase();
     setState(() {
@@ -110,6 +126,8 @@ class _HelpNearMePageState extends State<HelpNearMePage> {
     });
   }
 
+  /// When a search result is chosen, move the map viewport to the POI
+  /// and update the search field with the selected name.
   void _onSelectSearchResult(Map<String, dynamic> poi) {
     final LatLng target = LatLng(poi['lat'] as double, poi['lng'] as double);
     _mapController.move(target, 15);
@@ -188,6 +206,10 @@ class _HelpNearMePageState extends State<HelpNearMePage> {
   ];
 
   // Fetch user location with permission handling, but gracefully fall back.
+  // Permissions flow:
+  // 1) If services are off → return fallback
+  // 2) If permissions denied (incl. forever) → return fallback
+  // 3) Else → return current GPS position
   Future<LatLng> _getInitialCenter() async {
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -234,7 +256,7 @@ class _HelpNearMePageState extends State<HelpNearMePage> {
       ),
       body: Column(
         children: [
-          // Search bar above map
+          // Search bar above map — narrows `_searchResults` and can recenter map
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Column(

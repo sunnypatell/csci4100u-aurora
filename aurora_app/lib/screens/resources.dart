@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 /// ResourcesPage
 /// Curated self-help & support destination offering cards that route into
 /// focused help pages (Eating Disorders, ADHD, Anxiety/Depression, Other
@@ -9,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/aurora_snackbar.dart';
 import '../services/remote_resource_service.dart';
+import '../screens/resources/eat_dis.dart';
 
 /// Entry widget (use in your routes or Navigator.push)
 class ResourcesPage extends StatefulWidget {
@@ -74,8 +76,8 @@ class _ResourcesPageState extends State<ResourcesPage>
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-                  colorScheme.surface.withValues(alpha: 0.95),
-                      colorScheme.surfaceContainerHighest.withValues(alpha: 0.95),
+              colorScheme.surface.withValues(alpha: 0.95),
+              colorScheme.surfaceContainerHighest.withValues(alpha: 0.95),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -86,7 +88,8 @@ class _ResourcesPageState extends State<ResourcesPage>
             future: _quoteFuture,
             builder: (context, snap) {
               final quote = snap.data;
-              if (snap.connectionState == ConnectionState.done && _justRefreshed) {
+              if (snap.connectionState == ConnectionState.done &&
+                  _justRefreshed) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (!mounted) return;
                   final isFallback = quote?.isFallback ?? false;
@@ -97,7 +100,8 @@ class _ResourcesPageState extends State<ResourcesPage>
                       variant: AuroraSnackVariant.alert,
                     );
                   } else {
-                    showAuroraSnackBar(context, 'Quote refreshed ✓', variant: AuroraSnackVariant.success);
+                    showAuroraSnackBar(context, 'Quote refreshed ✓',
+                        variant: AuroraSnackVariant.success);
                   }
                 });
                 _justRefreshed = false;
@@ -112,7 +116,8 @@ class _ResourcesPageState extends State<ResourcesPage>
                         children: [
                           _QuoteCard(
                             quote: quote,
-                            loading: snap.connectionState != ConnectionState.done,
+                            loading:
+                                snap.connectionState != ConnectionState.done,
                             onRefresh: _refreshQuote,
                           ),
                           const SizedBox(height: 16),
@@ -128,28 +133,35 @@ class _ResourcesPageState extends State<ResourcesPage>
                                     shape: BoxShape.circle,
                                     gradient: LinearGradient(
                                       colors: [
-                                            colorScheme.primary.withValues(alpha: 0.28),
-                                            colorScheme.tertiary.withValues(alpha: 0.28),
+                                        colorScheme.primary
+                                            .withValues(alpha: 0.28),
+                                        colorScheme.tertiary
+                                            .withValues(alpha: 0.28),
                                       ],
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: colorScheme.primary.withValues(alpha: 0.18),
+                                        color: colorScheme.primary
+                                            .withValues(alpha: 0.18),
                                         blurRadius: 12,
                                         spreadRadius: 2,
                                       ),
                                     ],
                                   ),
                                   alignment: Alignment.center,
-                                  child: const Text("🫧", style: TextStyle(fontSize: 18)),
+                                  child: const Text("🫧",
+                                      style: TextStyle(fontSize: 18)),
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Text(
                                 "You’re safe here",
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(
                                       fontWeight: FontWeight.w700,
                                     ),
                               ),
@@ -158,10 +170,15 @@ class _ResourcesPageState extends State<ResourcesPage>
                           const SizedBox(height: 8),
                           Text(
                             "Pick what you need right now. Small steps count. 💙",
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.3),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(height: 1.3),
                           ),
                           const SizedBox(height: 16),
-                          const _TipChip(label: "Tip: Inhale 4 • Hold 4 • Exhale 4", icon: "🌿"),
+                          const _TipChip(
+                              label: "Tip: Inhale 4 • Hold 4 • Exhale 4",
+                              icon: "🌿"),
                           const SizedBox(height: 16),
                         ],
                       ),
@@ -171,9 +188,11 @@ class _ResourcesPageState extends State<ResourcesPage>
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                     sliver: SliverLayoutBuilder(
                       builder: (context, constraints) {
-                        final crossAxisCount = constraints.crossAxisExtent > 780 ? 3 : 2;
+                        final crossAxisCount =
+                            constraints.crossAxisExtent > 780 ? 3 : 2;
                         return SliverGrid(
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: crossAxisCount,
                             mainAxisSpacing: 14,
                             crossAxisSpacing: 14,
@@ -184,33 +203,44 @@ class _ResourcesPageState extends State<ResourcesPage>
                               title: "Eating Disorders",
                               subtitle: "Gentle guidance & support",
                               emoji: "🥣",
-                                  gradientA: Colors.pink.shade200.withValues(alpha: 0.35),
-                                  gradientB: Colors.purple.shade200.withValues(alpha: 0.35),
-                              onTap: () => _open(context, const EatingDisordersHelpPage()),
+                              gradientA:
+                                  Colors.pink.shade200.withValues(alpha: 0.35),
+                              gradientB: Colors.purple.shade200
+                                  .withValues(alpha: 0.35),
+                              onTap: () =>
+                                  _open(context, EatingDisordersHelpPage()),
                             ),
                             ResourceCard(
                               title: "ADHD Help",
                               subtitle: "Focus tools & coping tips",
                               emoji: "🧠",
-                                  gradientA: Colors.blue.shade200.withValues(alpha: 0.35),
-                                  gradientB: Colors.green.shade200.withValues(alpha: 0.35),
+                              gradientA:
+                                  Colors.blue.shade200.withValues(alpha: 0.35),
+                              gradientB:
+                                  Colors.green.shade200.withValues(alpha: 0.35),
                               onTap: () => _open(context, const ADHDHelpPage()),
                             ),
                             ResourceCard(
                               title: "Anxiety",
                               subtitle: "Grounding, calm, connection",
                               emoji: "🌊",
-                                  gradientA: Colors.teal.shade200.withValues(alpha: 0.35),
-                                  gradientB: Colors.cyan.shade200.withValues(alpha: 0.35),
-                              onTap: () => _open(context, const AnxietyDepressionHelpPage()),
+                              gradientA:
+                                  Colors.teal.shade200.withValues(alpha: 0.35),
+                              gradientB:
+                                  Colors.cyan.shade200.withValues(alpha: 0.35),
+                              onTap: () => _open(
+                                  context, const AnxietyDepressionHelpPage()),
                             ),
                             ResourceCard(
                               title: "More Supports",
                               subtitle: "Hotlines, journaling, music",
                               emoji: "🧩",
-                                  gradientA: Colors.amber.shade200.withValues(alpha: 0.35),
-                                  gradientB: Colors.indigo.shade200.withValues(alpha: 0.35),
-                              onTap: () => _open(context, const OtherSupportsPage()),
+                              gradientA:
+                                  Colors.amber.shade200.withValues(alpha: 0.35),
+                              gradientB: Colors.indigo.shade200
+                                  .withValues(alpha: 0.35),
+                              onTap: () =>
+                                  _open(context, const OtherSupportsPage()),
                             ),
                           ]),
                         );
@@ -231,7 +261,8 @@ class _ResourcesPageState extends State<ResourcesPage>
       _quoteFuture = RemoteResourceService.instance.fetchRandomQuote();
       _justRefreshed = true;
     });
-    showAuroraSnackBar(context, 'Refreshing...', variant: AuroraSnackVariant.info);
+    showAuroraSnackBar(context, 'Refreshing...',
+        variant: AuroraSnackVariant.info);
   }
 
   void _open(BuildContext context, Widget page) {
@@ -278,8 +309,8 @@ class _TipChipState extends State<_TipChip> {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: cs.surfaceContainerHighest.withValues(alpha: 0.65),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.4)),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.4)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -427,7 +458,8 @@ class _QuoteCard extends StatelessWidget {
   final Quote? quote;
   final bool loading;
   final VoidCallback onRefresh;
-  const _QuoteCard({required this.quote, required this.loading, required this.onRefresh});
+  const _QuoteCard(
+      {required this.quote, required this.loading, required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
@@ -500,7 +532,8 @@ class _QuoteCard extends StatelessWidget {
                       label: const Text('Refresh'),
                       style: TextButton.styleFrom(
                         foregroundColor: cs.primary,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                       ),
                     ),
                   )
@@ -515,24 +548,6 @@ class _QuoteCard extends StatelessWidget {
 /* Replace the placeholder bodies with your actual content (articles, links,
    exercises, hotlines, StreamBuilders to Firestore, etc.) */
 
-class EatingDisordersHelpPage extends StatelessWidget {
-  const EatingDisordersHelpPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const _SimpleHelpScaffold(
-      title: "Eating Disorders",
-      emoji: "🥣",
-  bullets: [
-        "Gentle meal-time prompts and self-compassion notes.",
-        "Normalize small wins; progress isn’t linear.",
-        "Crisis support and professional help options.",
-      ],
-      accent: Colors.purple,
-    );
-  }
-}
-
 class ADHDHelpPage extends StatelessWidget {
   const ADHDHelpPage({super.key});
 
@@ -541,7 +556,7 @@ class ADHDHelpPage extends StatelessWidget {
     return const _SimpleHelpScaffold(
       title: "ADHD Help",
       emoji: "🧠",
-  bullets: [
+      bullets: [
         "Two-minute start: pick one tiny action and begin.",
         "Body-double timer and noise options.",
         "Task-break-reward cycles and routine builders.",
@@ -559,7 +574,7 @@ class AnxietyDepressionHelpPage extends StatelessWidget {
     return const _SimpleHelpScaffold(
       title: "Anxiety & Depression",
       emoji: "🌊",
-  bullets: [
+      bullets: [
         "Grounding (5-4-3-2-1) & calm breathing guides.",
         "Friendly journaling prompts and mood check-ins.",
         "When to reach out—hotlines and campus/community care.",
@@ -577,7 +592,7 @@ class OtherSupportsPage extends StatelessWidget {
     return const _SimpleHelpScaffold(
       title: "More Supports",
       emoji: "🧩",
-  bullets: [
+      bullets: [
         "Study stress, sleep, grief, substance use resources.",
         "Music & nature soundscapes for quick reset.",
         "Community groups, peer listeners, and text lines.",
@@ -681,7 +696,8 @@ class _SimpleHelpScaffold extends StatelessWidget {
   /// snackbar with the number so the user can call manually. In production
   /// you may externalize these contacts and localize per region.
   Future<void> _launchSupport(BuildContext context) async {
-    const campusUrl = 'https://studentservices.ontariotechu.ca/current-students/health-and-wellness/i-am-in-distress/index.php';
+    const campusUrl =
+        'https://studentservices.ontariotechu.ca/current-students/health-and-wellness/i-am-in-distress/index.php';
     const hotlineNumber = '+1-866-531-2600'; // ConnexOntario (example)
     final hotlineUri = Uri(scheme: 'tel', path: hotlineNumber);
 
@@ -691,7 +707,8 @@ class _SimpleHelpScaffold extends StatelessWidget {
       if (await canLaunchUrl(campusUri)) {
         await launchUrl(campusUri, mode: LaunchMode.externalApplication);
         if (!context.mounted) return;
-        showAuroraSnackBar(context, 'Opening campus wellness resources…', variant: AuroraSnackVariant.success);
+        showAuroraSnackBar(context, 'Opening campus wellness resources…',
+            variant: AuroraSnackVariant.success);
         return;
       }
     } catch (_) {/* ignore */}
@@ -699,12 +716,14 @@ class _SimpleHelpScaffold extends StatelessWidget {
       if (await canLaunchUrl(hotlineUri)) {
         await launchUrl(hotlineUri);
         if (!context.mounted) return;
-        showAuroraSnackBar(context, 'Dialing mental health support…', variant: AuroraSnackVariant.success, icon: Icons.call_rounded);
+        showAuroraSnackBar(context, 'Dialing mental health support…',
+            variant: AuroraSnackVariant.success, icon: Icons.call_rounded);
         return;
       }
     } catch (_) {/* ignore */}
     // Fallback snackbar if nothing could launch.
     if (!context.mounted) return;
-    showAuroraSnackBar(context, 'Call $hotlineNumber for mental health support', variant: AuroraSnackVariant.info, icon: Icons.call_rounded);
+    showAuroraSnackBar(context, 'Call $hotlineNumber for mental health support',
+        variant: AuroraSnackVariant.info, icon: Icons.call_rounded);
   }
 }

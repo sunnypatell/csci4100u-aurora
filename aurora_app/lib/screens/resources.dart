@@ -12,6 +12,7 @@ import '../widgets/aurora_snackbar.dart';
 import '../services/remote_resource_service.dart';
 import '../screens/resources/eat_dis.dart';
 import 'resources/adhd_help.dart';
+import 'resources/anx_dep.dart';
 
 /// Entry widget (use in your routes or Navigator.push)
 class ResourcesPage extends StatefulWidget {
@@ -208,8 +209,8 @@ class _ResourcesPageState extends State<ResourcesPage>
                                   Colors.pink.shade200.withValues(alpha: 0.35),
                               gradientB: Colors.purple.shade200
                                   .withValues(alpha: 0.35),
-                              onTap: () =>
-                                  _open(context, const EatingDisordersHelpPage()),
+                              onTap: () => _open(
+                                  context, const EatingDisordersHelpPage()),
                             ),
                             ResourceCard(
                               title: "ADHD Help",
@@ -222,7 +223,7 @@ class _ResourcesPageState extends State<ResourcesPage>
                               onTap: () => _open(context, const ADHDHelpPage()),
                             ),
                             ResourceCard(
-                              title: "Anxiety",
+                              title: "Anxiety & Depression",
                               subtitle: "Grounding, calm, connection",
                               emoji: "🌊",
                               gradientA:
@@ -546,24 +547,6 @@ class _QuoteCard extends StatelessWidget {
 }
 
 /* --------------------------- Destination pages --------------------------- */
-
-class AnxietyDepressionHelpPage extends StatelessWidget {
-  const AnxietyDepressionHelpPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const _SimpleHelpScaffold(
-      title: "Anxiety & Depression",
-      emoji: "🌊",
-      bullets: [
-        "Grounding (5-4-3-2-1) & calm breathing guides.",
-        "Friendly journaling prompts and mood check-ins.",
-        "When to reach out—hotlines and campus/community care.",
-      ],
-      accent: Colors.teal,
-    );
-  }
-}
 
 class OtherSupportsPage extends StatelessWidget {
   const OtherSupportsPage({super.key});

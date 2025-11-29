@@ -10,6 +10,11 @@ class AuthButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isLoading;
 
+  /// Creates a styled authentication action button.
+  ///
+  /// [text]: Visible label.
+  /// [onPressed]: Callback when tapped (ignored while [isLoading] true).
+  /// [isLoading]: Shows a spinner and disables the button.
   const AuthButton({
     super.key,
     required this.text,

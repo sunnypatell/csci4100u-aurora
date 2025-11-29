@@ -1,8 +1,13 @@
-// NotificationService
-// Lightweight wrapper around flutter_local_notifications providing
-// initialization + a daily journal reminder scheduling helper. Timezone
-// handling is performed up front to support precise scheduling on all
-// platforms. All public methods are idempotent; calling init twice is safe.
+/// NotificationService
+///
+/// Lightweight wrapper around `flutter_local_notifications` providing:
+/// - Initialization (timezone + platform settings)
+/// - Permission orchestration (Android / iOS / macOS)
+/// - Daily journal reminder scheduling (persisted via SharedPreferences)
+/// - Immediate + one‑off scheduled notifications
+/// - Tap callback routing (foreground & background)
+///
+/// All public methods are designed to be idempotent (safe multi‑call).
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -36,14 +41,14 @@ class NotificationService {
   static const _prefDailyScheduled = 'daily_journal_scheduled';
 
   /// Initializes timezone data + platform specific notification settings.
-  /// Safe to call multiple times; subsequent calls are no-ops.
+  /// Safe to call multiple times; subsequent calls are no‑ops.
   Future<void> init() async {
     if (_initialized) return;
 
     // 1. init timezones
-    tz.initializeTimeZones();
+    tz.initializeTimeZones(); // load bundled timezone database (necessary for zonedSchedule correctness)
     // if you want to be extra explicit:
-    tz.setLocalLocation(tz.getLocation(tz.local.name));
+    tz.setLocalLocation(tz.getLocation(tz.local.name)); // ensure local location explicitly set (defensive clarity)
 
     // 2. android init
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -68,7 +73,7 @@ class NotificationService {
     );
 
     // Android channel creation (redundant if exists).
-    final androidPlatform = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlatform = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>(); // access Android-specific APIs if available
     if (androidPlatform != null) {
       await androidPlatform.createNotificationChannel(
         const AndroidNotificationChannel(
@@ -83,20 +88,21 @@ class NotificationService {
     _initialized = true;
   }
 
-  /// Request user notification permissions (safe multi-call).
+  /// Requests user notification permissions (safe multi‑call).
+  /// Returns true if permissions are considered granted.
   Future<bool> requestPermissions() async {
-    if (_permissionsRequested) return true; // assume granted previously
+    if (_permissionsRequested) return true; // fast path: we already asked this session
     bool granted = true;
-    final ios = _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+    final ios = _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>(); // iOS permission request
     if (ios != null) {
       final res = await ios.requestPermissions(alert: true, badge: true, sound: true);
       granted = res ?? false;
     }
-    final macos = _plugin.resolvePlatformSpecificImplementation<MacOSFlutterLocalNotificationsPlugin>();
+    final macos = _plugin.resolvePlatformSpecificImplementation<MacOSFlutterLocalNotificationsPlugin>(); // macOS request (similar flags)
     if (macos != null) {
       await macos.requestPermissions(alert: true, badge: true, sound: true);
     }
-    final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>(); // Android 13+ runtime permission
     if (android != null) {
       final aGranted = await android.requestNotificationsPermission();
       if (aGranted == null) {
@@ -109,14 +115,19 @@ class NotificationService {
     return granted;
   }
 
-  /// Register a handler for notification taps (foreground & background).
+  /// Registers a handler for notification taps (foreground & background).
   void setOnNotificationTap(Function(String? payload) handler) {
     _onTap = handler;
   }
 
   /// Schedules a daily notification reminding the user to journal.
-  /// Default time is 21:00 (9PM) local timezone. Persists a flag so repeated
-  /// calls do not duplicate scheduling unless [force] is true.
+  ///
+  /// Parameters:
+  /// - [hour]/[minute]: Local time for reminder (default 21:00).
+  /// - [title]/[body]: Notification content.
+  /// - [force]: Re-schedule even if an existing daily reminder is recorded.
+  ///
+  /// Persists a flag so repeated calls do not duplicate scheduling unless [force] is true.
   Future<void> scheduleDailyJournalReminder({
     int hour = 21,
     int minute = 0,
@@ -130,7 +141,7 @@ class NotificationService {
     await requestPermissions();
 
     final prefs = await SharedPreferences.getInstance();
-    final already = prefs.getBool(_prefDailyScheduled) ?? false;
+    final already = prefs.getBool(_prefDailyScheduled) ?? false; // persisted flag prevents duplicate schedule
     if (already && !force) return;
 
     const androidDetails = AndroidNotificationDetails(
@@ -148,7 +159,7 @@ class NotificationService {
       iOS: iosDetails,
     );
 
-    final scheduled = _nextInstanceOfTime(hour, minute);
+    final scheduled = _nextInstanceOfTime(hour, minute); // compute next occurrence (today or tomorrow)
 
     await _plugin.zonedSchedule(
       _dailyId,
@@ -159,19 +170,19 @@ class NotificationService {
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time, // repeat daily
+      matchDateTimeComponents: DateTimeComponents.time, // repeat daily at same local clock time
     );
     await prefs.setBool(_prefDailyScheduled, true);
   }
 
-  /// Cancels the previously scheduled daily journal reminder notification.
+  /// Cancels the previously scheduled daily journal reminder notification and clears persistence flag.
   Future<void> cancelDailyJournalReminder() async {
     await _plugin.cancel(_dailyId);
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_prefDailyScheduled);
   }
 
-  /// Show an immediate notification.
+  /// Shows an immediate notification with optional importance/priority overrides.
   Future<void> showInstant({
     required int id,
     required String title,
@@ -194,7 +205,7 @@ class NotificationService {
     await _plugin.show(id, title, body, details, payload: payload);
   }
 
-  /// Schedule a one-off notification at an exact local time.
+  /// Schedules a one‑off notification at an exact local time [when].
   Future<void> scheduleOneOff({
     required int id,
     required DateTime when,
@@ -228,14 +239,14 @@ class NotificationService {
   /// Returns all pending scheduled notifications.
   Future<List<PendingNotificationRequest>> pending() => _plugin.pendingNotificationRequests();
 
-  /// Cancel all notifications.
+  /// Cancels all notifications and clears the persisted daily reminder flag.
   Future<void> cancelAll() async {
     await _plugin.cancelAll();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_prefDailyScheduled);
   }
 
-  /// Computes the next occurrence of given hour/minute in local timezone.
+  /// Computes the next occurrence of given [hour]/[minute] in local timezone.
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
     final now = tz.TZDateTime.now(tz.local);
     var scheduled =

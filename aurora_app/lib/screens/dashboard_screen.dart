@@ -1,10 +1,17 @@
 import 'dart:ui' show ImageFilter;
 /// DashboardScreen
-/// Main post-auth landing surface presenting quick navigation tiles into
-/// primary feature areas (Journal, Resources, Help Near Me, Chat). Utilizes a
-/// responsive SliverGrid to adapt tile count for wide layouts and streams the
-/// user's profile document to render a friendly greeting. Sign-out and
-/// settings available via AppBar actions.
+///
+/// Main post‑authentication landing surface presenting quick navigation tiles
+/// into primary feature areas (Journal, Resources, Help Near Me, Chat). Uses a
+/// responsive `SliverGrid` (2 columns on narrow viewports, 4 on wide) and a
+/// streamed profile document to render a contextual greeting. Sign‑out and
+/// settings are exposed via AppBar actions.
+///
+/// UX / Design notes:
+/// - Soft background + glassmorphism cards to maintain a calm aesthetic.
+/// - Grid delegates adapt aspect ratio to avoid overly tall tiles on desktop.
+/// - Greeting chooses the most specific available identity field (displayName,
+///   fullName, Firebase displayName, email fallback).
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -81,7 +88,7 @@ class DashboardScreen extends StatelessWidget {
             SliverToBoxAdapter(
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 920),
+                  constraints: const BoxConstraints(maxWidth: 920), // limit width for desktop so greeting + grid don't stretch excessively
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
                     child: uid != null
@@ -89,15 +96,21 @@ class DashboardScreen extends StatelessWidget {
                             stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
                             builder: (context, snap) {
                               if (snap.connectionState == ConnectionState.waiting) {
-                                return const _ProfileCard.loading();
+                                return const _ProfileCard.loading(); // show shimmering placeholder while profile loads
                               }
                               if (snap.hasError) {
-                                return const _ProfileCard(name: 'Hello');
+                                return const _ProfileCard(name: 'Hello'); // degrade gracefully if fetch fails
                               }
                               final data = snap.data?.data();
                               final displayName = (data?['displayName'] as String?)?.trim();
                               final fullName = (data?['fullName'] as String?)?.trim();
                               // Determine best display name candidate in priority order.
+                              // Candidate priority order (first non-empty wins):
+                              // 1. Explicit displayName (user chosen)
+                              // 2. Full legal name (if present)
+                              // 3. Firebase Auth profile displayName
+                              // 4. Email (identifier fallback)
+                              // 5. Generic 'User'
                               final candidates = <String?>[
                                 displayName,
                                 fullName,
@@ -125,10 +138,10 @@ class DashboardScreen extends StatelessWidget {
               ),
               sliver: SliverLayoutBuilder(
                 builder: (context, constraints) {
-                  final viewportWidth = constraints.crossAxisExtent.clamp(280.0, 1200.0);
-                  final isWide = viewportWidth >= 680; // breakpoint for 4-column layout
-                  final crossAxisCount = isWide ? 4 : 2;
-                  final childAspectRatio = isWide ? 1.1 : 0.95;
+                  final viewportWidth = constraints.crossAxisExtent.clamp(280.0, 1200.0); // clamp to avoid pathological huge widths
+                  final isWide = viewportWidth >= 680; // 680 chosen experimentally for comfortable 4-col density
+                  final crossAxisCount = isWide ? 4 : 2; // switch columns based on width
+                  final childAspectRatio = isWide ? 1.1 : 0.95; // adjust ratio to prevent tall cards on wide screens
 
                   return SliverGrid(
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -182,6 +195,9 @@ class DashboardScreen extends StatelessWidget {
   }
 }
 
+/// Private animated glass profile card shown at top of dashboard.
+/// Handles loading (skeleton shimmer substitute), greeting text and subtle
+/// entrance scale animation.
 class _ProfileCard extends StatelessWidget {
   final String? name;
   final bool isLoading;
@@ -264,6 +280,8 @@ class _ProfileCard extends StatelessWidget {
   }
 }
 
+/// Simple placeholder skeleton used for loading the profile document.
+/// Renders a configurable number of light bars (lines).
 class _Skeleton extends StatelessWidget {
   final int lines;
   const _Skeleton({this.lines = 1});
@@ -290,6 +308,11 @@ class _Skeleton extends StatelessWidget {
   }
 }
 
+/// Reusable action tile representing a primary navigation target.
+/// Applies layered gradients + backdrop blur for brand consistency.
+///
+/// [titleBuilder] receives current screen width so titles can shorten in
+/// tight layouts (example: "Chat with Aurora" -> "Aurora Chat").
 class _ActionTile extends StatelessWidget {
   final IconData icon;
   final String Function(double screenWidth) titleBuilder;
@@ -305,7 +328,7 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Glass + gradient surface tuned to complement resources page aesthetic
+    // Glass + gradient surface tuned to complement resources page aesthetic.
     final surface = Colors.white.withValues(alpha: 0.50);
     const border = Color(0x22000000);
     final screenWidth = MediaQuery.sizeOf(context).width;

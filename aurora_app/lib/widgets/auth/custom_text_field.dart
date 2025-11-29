@@ -21,6 +21,14 @@ class CustomTextField extends StatelessWidget {
   final bool expands;
   final TextInputAction? textInputAction;
 
+  /// Reusable text form field wrapper.
+  ///
+  /// Required: [controller], [label], [hintText].
+  /// Common optional tweaks:
+  /// - [obscureText] for passwords
+  /// - [suffixIcon] (e.g. visibility toggle)
+  /// - [minLines]/[maxLines]/[expands] for multi‑line notes
+  /// - [validator] to integrate with form validation
   const CustomTextField({
     super.key,
     required this.controller,

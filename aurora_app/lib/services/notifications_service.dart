@@ -163,18 +163,26 @@ class NotificationService {
 
     final scheduled = _nextInstanceOfTime(hour, minute); // compute next occurrence (today or tomorrow)
 
-    await _plugin.zonedSchedule(
-      _dailyId,
-      title,
-      body,
-      scheduled,
+    try {
+      await _plugin.zonedSchedule(
+        _dailyId,
+        title,
+        body,
+        scheduled,
         details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time, // repeat daily at same local clock time
-    );
-    await prefs.setBool(_prefDailyScheduled, true);
+        // Avoid exact alarms to prevent PlatformException on Android 12+
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time, // repeat daily at same local clock time
+      );
+      await prefs.setBool(_prefDailyScheduled, true);
+    } catch (e) {
+      // If scheduling fails, don't block app startup; just log in debug.
+      if (kDebugMode) {
+        debugPrint('Daily reminder scheduling failed: $e');
+      }
+    }
   }
 
   /// Cancels the previously scheduled daily journal reminder notification and clears persistence flag.
@@ -227,15 +235,21 @@ class NotificationService {
       ),
       iOS: DarwinNotificationDetails(),
     );
-    await _plugin.zonedSchedule(
-      id,
-      title,
-      body,
-      tzTime,
-      details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-    );
+    try {
+      await _plugin.zonedSchedule(
+        id,
+        title,
+        body,
+        tzTime,
+        details,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('One-off scheduling failed: $e');
+      }
+    }
   }
 
   /// Returns all pending scheduled notifications.

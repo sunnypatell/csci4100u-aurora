@@ -76,6 +76,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/aurora_image.jpeg
+    # Load env vars on mobile/desktop via flutter_dotenv
+    - .env
 
   # To add assets to your application, add an assets section, like this:
   # assets:

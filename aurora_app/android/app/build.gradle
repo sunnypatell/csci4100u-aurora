@@ -15,12 +15,14 @@ android {
     ndkVersion = "25.1.8937393"
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        // Use Java 17 and enable desugaring per plugin requirements
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "17"
     }
 
     defaultConfig {
@@ -29,7 +31,7 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         // Firebase Auth 23.x requires minSdkVersion >= 23
-        minSdk = 23
+        minSdkVersion = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -46,4 +48,19 @@ android {
 
 flutter {
     source = "../.."
+}
+
+// Force older AndroidX library versions compatible with AGP 8.2.1
+configurations.all {
+    resolutionStrategy {
+        force 'androidx.browser:browser:1.7.0'
+        // Bump core/core-ktx to include EditorInfoCompat.setStylusHandwritingEnabled
+        force 'androidx.core:core-ktx:1.13.1'
+        force 'androidx.core:core:1.13.1'
+    }
+}
+
+dependencies {
+    // Desugaring support library
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }

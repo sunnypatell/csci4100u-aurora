@@ -26,20 +26,20 @@ import 'ai_chat.dart';
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
-  static const _bg = Color(0xFFE3F2FD); // not critical now, gradient used below
   static const _text =
-      Color(0xFF12385C); // deep slate blue to match rest of app  )
+      Color(0xFF2F2E2C); // neutral text used across app
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final user = FirebaseAuth.instance.currentUser;
     final uid = user?.uid;
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: false,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: const Text(
@@ -85,14 +85,13 @@ class DashboardScreen extends StatelessWidget {
         ],
       ),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFFE3F2FD), // light blue
-              Color(0xFFE0F7FA), // blue-teal
-              Color(0xFFE8EAF6), // soft lilac
+              colorScheme.surface.withValues(alpha: 0.95),
+              colorScheme.surfaceContainerHighest.withValues(alpha: 0.95),
             ],
           ),
         ),
@@ -235,8 +234,9 @@ class _ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surface = Colors.white.withValues(alpha: 0.65);
-    const border = Color(0x3364B5F6);
+    final colorScheme = Theme.of(context).colorScheme;
+    final surface = colorScheme.surface.withValues(alpha: 0.65);
+    final border = colorScheme.primary.withValues(alpha: 0.16);
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.96, end: 1),
@@ -268,10 +268,10 @@ class _ProfileCard extends StatelessWidget {
                   height: 54,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       colors: [
-                        Color(0xFF90CAF9), // light blue
-                        Color(0xFF80DEEA), // teal
+                        colorScheme.primary,
+                        colorScheme.primaryContainer,
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -366,8 +366,9 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surface = Colors.white.withValues(alpha: 0.60);
-    const border = Color(0x2264B5F6);
+    final colorScheme = Theme.of(context).colorScheme;
+    final surface = colorScheme.surface.withValues(alpha: 0.60);
+    final border = colorScheme.primary.withValues(alpha: 0.14);
     final screenWidth = MediaQuery.sizeOf(context).width;
 
     return TweenAnimationBuilder<double>(
@@ -382,17 +383,17 @@ class _ActionTile extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            splashColor: Colors.white.withOpacity(0.15),
+            splashColor: Colors.white.withValues(alpha: 0.15),
             highlightColor: Colors.transparent,
-            child: BackdropFilter(
+                child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
               child: Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [
-                      Color(0xFFE3F2FD), // soft blue
-                      Color(0xFFE0F7FA), // blue-teal
+                      colorScheme.surface.withValues(alpha: 0.95),
+                      colorScheme.surfaceContainerHighest.withValues(alpha: 0.95),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -400,11 +401,11 @@ class _ActionTile extends StatelessWidget {
                   color: surface,
                   borderRadius: BorderRadius.circular(22),
                   border: Border.all(color: border),
-                  boxShadow: const [
+                  boxShadow: [
                     BoxShadow(
                       blurRadius: 24,
-                      offset: Offset(0, 12),
-                      color: Color(0x1864B5F6),
+                      offset: const Offset(0, 12),
+                      color: colorScheme.primary.withValues(alpha: 0.09),
                     ),
                   ],
                 ),
@@ -417,10 +418,10 @@ class _ActionTile extends StatelessWidget {
                       height: 48,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           colors: [
-                            Color(0xFF90CAF9),
-                            Color(0xFF80DEEA),
+                            colorScheme.primary,
+                            colorScheme.primaryContainer,
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,

@@ -395,11 +395,11 @@ class _AnxietyDepressionHelpPageState extends State<AnxietyDepressionHelpPage>
                             end: Alignment.bottomRight,
                           ),
                           boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF64B5F6).withOpacity(0.35),
-                              blurRadius: 18,
-                              offset: const Offset(0, 8),
-                            ),
+                              BoxShadow(
+                                color: const Color(0xFF64B5F6).withValues(alpha: 0.35),
+                                blurRadius: 18,
+                                offset: const Offset(0, 8),
+                              ),
                           ],
                         ),
                         child: Center(
@@ -589,7 +589,7 @@ class _AnxietyDepressionHelpPageState extends State<AnxietyDepressionHelpPage>
                       decoration: InputDecoration(
                         hintText: "Add one tiny reason…",
                         filled: true,
-                        fillColor: Colors.white.withOpacity(0.9),
+                        fillColor: Colors.white.withValues(alpha: 0.9),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -616,7 +616,7 @@ class _AnxietyDepressionHelpPageState extends State<AnxietyDepressionHelpPage>
                                 borderRadius: BorderRadius.circular(12),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
+                                    color: Colors.black.withValues(alpha: 0.05),
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),
@@ -735,7 +735,7 @@ class _BreathingDogFace extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFFB74D).withOpacity(0.4),
+            color: const Color(0xFFFFB74D).withValues(alpha: 0.4),
             blurRadius: 18,
             offset: const Offset(0, 10),
           ),
@@ -775,22 +775,22 @@ class _BreathingDogFace extends StatelessWidget {
               width: 70,
               height: 50,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.95),
+                color: Colors.white.withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(30),
               ),
             ),
           ),
           // eyes
-          const Positioned(
-            top: 55,
-            left: 46,
-            child: _eye(),
-          ),
-          const Positioned(
-            top: 55,
-            right: 46,
-            child: _eye(),
-          ),
+            const Positioned(
+              top: 55,
+              left: 46,
+              child: _Eye(),
+            ),
+            const Positioned(
+              top: 55,
+              right: 46,
+              child: _Eye(),
+            ),
           // nose
           Positioned(
             bottom: 44,
@@ -811,8 +811,8 @@ class _BreathingDogFace extends StatelessWidget {
               height: 16,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                border: Border(
-                  bottom: BorderSide(color: const Color(0xFF5D4037), width: 2),
+                border: const Border(
+                  bottom: BorderSide(color: Color(0xFF5D4037), width: 2),
                 ),
               ),
             ),
@@ -856,21 +856,21 @@ class _BreathingDogFace extends StatelessWidget {
   }
 }
 
-class _eye extends StatelessWidget {
-  const _eye();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 10,
-      height: 10,
-      decoration: const BoxDecoration(
-        color: Color(0xFF263238),
-        shape: BoxShape.circle,
-      ),
-    );
+  class _Eye extends StatelessWidget {
+    const _Eye();
+  
+    @override
+    Widget build(BuildContext context) {
+      return Container(
+        width: 10,
+        height: 10,
+        decoration: const BoxDecoration(
+          color: Color(0xFF263238),
+          shape: BoxShape.circle,
+        ),
+      );
+    }
   }
-}
 
 class _GlassCard extends StatelessWidget {
   final Widget child;
@@ -883,19 +883,19 @@ class _GlassCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(22),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
+          child: Container(
           padding: const EdgeInsets.all(16),
           margin: const EdgeInsets.symmetric(vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withValues(alpha: 0.7),
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: const Color(0xFFBBDEFB).withOpacity(0.9),
+              color: const Color(0xFFBBDEFB).withValues(alpha: 0.9),
               width: 1.1,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF64B5F6).withOpacity(0.2),
+                color: const Color(0xFF64B5F6).withValues(alpha: 0.2),
                 blurRadius: 14,
                 offset: const Offset(0, 8),
               ),

@@ -1,13 +1,15 @@
-/// NotificationService
-///
-/// Lightweight wrapper around `flutter_local_notifications` providing:
-/// - Initialization (timezone + platform settings)
-/// - Permission orchestration (Android / iOS / macOS)
-/// - Daily journal reminder scheduling (persisted via SharedPreferences)
-/// - Immediate + one‑off scheduled notifications
-/// - Tap callback routing (foreground & background)
-///
-/// All public methods are designed to be idempotent (safe multi‑call).
+/*
+NotificationService
+
+Lightweight wrapper around `flutter_local_notifications` providing:
+- Initialization (timezone + platform settings)
+- Permission orchestration (Android / iOS / macOS)
+- Daily journal reminder scheduling (persisted via SharedPreferences)
+- Immediate + one‑off scheduled notifications
+- Tap callback routing (foreground & background)
+
+All public methods are designed to be idempotent (safe multi‑call).
+*/
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;

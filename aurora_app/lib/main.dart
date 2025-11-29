@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart';
 /// main.dart
 /// Application entry: initializes Flutter bindings, Firebase (per-platform
 /// options), local notification service, then boots the root `AuroraApp`.
@@ -14,6 +16,16 @@ import 'services/notifications_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables from .env on non-web platforms.
+  if (!kIsWeb) {
+    try {
+      await dotenv.load(fileName: '.env');
+    } catch (e) {
+      debugPrint('No .env file loaded (fallback to empty env): $e');
+    }
+  }
+
   // Initialize Firebase for the current platform using FlutterFire generated options.
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

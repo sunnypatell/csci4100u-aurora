@@ -1,11 +1,13 @@
-/// HomeScreen (Deprecated)
-///
-/// Lightweight placeholder retained for backward compatibility with early
-/// navigation code and deep links that may still reference the original
-/// route name. Prefer using `DashboardScreen` for any new navigation.
-///
-/// Only exposes a sign–out action and a message indicating deprecation so
-/// contributors understand why this file still exists.
+/*
+HomeScreen (Deprecated)
+
+Lightweight placeholder retained for backward compatibility with early
+navigation code and deep links that may still reference the original
+route name. Prefer using `DashboardScreen` for any new navigation.
+
+Only exposes a sign–out action and a message indicating deprecation so
+contributors understand why this file still exists.
+*/
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 

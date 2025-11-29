@@ -1,14 +1,14 @@
 import 'dart:ui' show ImageFilter;
+
 /// DashboardScreen
 ///
-/// Main post‑authentication landing surface presenting quick navigation tiles
+/// Main post-authentication landing surface presenting quick navigation tiles
 /// into primary feature areas (Journal, Resources, Help Near Me, Chat). Uses a
 /// responsive `SliverGrid` (2 columns on narrow viewports, 4 on wide) and a
-/// streamed profile document to render a contextual greeting. Sign‑out and
+/// streamed profile document to render a contextual greeting. Sign-out and
 /// settings are exposed via AppBar actions.
 ///
 /// UX / Design notes:
-/// - Soft background + glassmorphism cards to maintain a calm aesthetic.
 /// - Grid delegates adapt aspect ratio to avoid overly tall tiles on desktop.
 /// - Greeting chooses the most specific available identity field (displayName,
 ///   fullName, Firebase displayName, email fallback).
@@ -26,8 +26,9 @@ import 'ai_chat.dart';
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
-  static const _bg = Color(0xFFF5EFE7);
-  static const _text = Color(0xFF2F2E2C);
+  static const _bg = Color(0xFFE3F2FD); // not critical now, gradient used below
+  static const _text =
+      Color(0xFF12385C); // deep slate blue to match rest of app  )
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +36,10 @@ class DashboardScreen extends StatelessWidget {
     final uid = user?.uid;
 
     return Scaffold(
-      backgroundColor: _bg,
+      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: _bg,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: const Text(
@@ -82,113 +84,140 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(width: 4),
         ],
       ),
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 920), // limit width for desktop so greeting + grid don't stretch excessively
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-                    child: uid != null
-                        ? StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                            stream: FirebaseFirestore.instance.collection('users').doc(uid).snapshots(),
-                            builder: (context, snap) {
-                              if (snap.connectionState == ConnectionState.waiting) {
-                                return const _ProfileCard.loading(); // show shimmering placeholder while profile loads
-                              }
-                              if (snap.hasError) {
-                                return const _ProfileCard(name: 'Hello'); // degrade gracefully if fetch fails
-                              }
-                              final data = snap.data?.data();
-                              final displayName = (data?['displayName'] as String?)?.trim();
-                              final fullName = (data?['fullName'] as String?)?.trim();
-                              // Determine best display name candidate in priority order.
-                              // Candidate priority order (first non-empty wins):
-                              // 1. Explicit displayName (user chosen)
-                              // 2. Full legal name (if present)
-                              // 3. Firebase Auth profile displayName
-                              // 4. Email (identifier fallback)
-                              // 5. Generic 'User'
-                              final candidates = <String?>[
-                                displayName,
-                                fullName,
-                                user?.displayName,
-                                user?.email,
-                                'User',
-                              ];
-                              final name = candidates.firstWhere(
-                                (v) => v != null && v.isNotEmpty,
-                                orElse: () => 'User',
-                              )!;
-                              return _ProfileCard(name: 'Hello, $name');
-                            },
-                          )
-                        : const _ProfileCard(name: 'Hello'),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFE3F2FD), // light blue
+              Color(0xFFE0F7FA), // blue-teal
+              Color(0xFFE8EAF6), // soft lilac
+            ],
+          ),
+        ),
+        child: SafeArea(
+          top: true,
+          bottom: true,
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: 920,
+                    ), // keep layout nice on wide screens
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                      child: uid != null
+                          ? StreamBuilder<
+                              DocumentSnapshot<Map<String, dynamic>>>(
+                              stream: FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(uid)
+                                  .snapshots(),
+                              builder: (context, snap) {
+                                if (snap.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const _ProfileCard.loading();
+                                }
+                                if (snap.hasError) {
+                                  return const _ProfileCard(name: 'Welcome');
+                                }
+                                final data = snap.data?.data();
+                                final displayName =
+                                    (data?['displayName'] as String?)?.trim();
+                                final fullName =
+                                    (data?['fullName'] as String?)?.trim();
+
+                                final candidates = <String?>[
+                                  displayName,
+                                  fullName,
+                                  user?.displayName,
+                                  user?.email,
+                                  'friend',
+                                ];
+                                final name = candidates.firstWhere(
+                                  (v) => v != null && v.isNotEmpty,
+                                  orElse: () => 'friend',
+                                )!;
+
+                                return _ProfileCard(
+                                  name: 'Welcome back, $name',
+                                );
+                              },
+                            )
+                          : const _ProfileCard(name: 'Welcome'),
+                    ),
                   ),
                 ),
               ),
-            ),
-            SliverPadding(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                bottom: 12 + MediaQuery.of(context).padding.bottom,
-              ),
-              sliver: SliverLayoutBuilder(
-                builder: (context, constraints) {
-                  final viewportWidth = constraints.crossAxisExtent.clamp(280.0, 1200.0); // clamp to avoid pathological huge widths
-                  final isWide = viewportWidth >= 680; // 680 chosen experimentally for comfortable 4-col density
-                  final crossAxisCount = isWide ? 4 : 2; // switch columns based on width
-                  final childAspectRatio = isWide ? 1.1 : 0.95; // adjust ratio to prevent tall cards on wide screens
+              SliverPadding(
+                padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  bottom: 12 + MediaQuery.of(context).padding.bottom,
+                ),
+                sliver: SliverLayoutBuilder(
+                  builder: (context, constraints) {
+                    final viewportWidth =
+                        constraints.crossAxisExtent.clamp(280.0, 1200.0);
+                    final isWide = viewportWidth >= 680;
+                    final crossAxisCount = isWide ? 4 : 2;
+                    final childAspectRatio = isWide ? 1.1 : 0.95;
 
-                  return SliverGrid(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      childAspectRatio: childAspectRatio,
-                    ),
-                    delegate: SliverChildListDelegate.fixed([
-                      _ActionTile(
-                        icon: Icons.menu_book_rounded,
-                        titleBuilder: (_) => 'Open Journal',
-                        subtitle: 'Write and reflect',
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const JournalScreen()),
-                        ),
+                    return SliverGrid(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                        childAspectRatio: childAspectRatio,
                       ),
-                      _ActionTile(
-                        icon: Icons.library_books_outlined,
-                        titleBuilder: (_) => 'Resources',
-                        subtitle: 'Learn coping skills',
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const ResourcesPage()),
+                      delegate: SliverChildListDelegate.fixed([
+                        _ActionTile(
+                          icon: Icons.menu_book_rounded,
+                          titleBuilder: (_) => 'Open Journal',
+                          subtitle: 'Write and reflect',
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => const JournalScreen()),
+                          ),
                         ),
-                      ),
-                      _ActionTile(
-                        icon: Icons.place_outlined,
-                        titleBuilder: (_) => 'Help Near Me',
-                        subtitle: 'Find local support',
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const HelpNearMePage()),
+                        _ActionTile(
+                          icon: Icons.library_books_outlined,
+                          titleBuilder: (_) => 'Resources',
+                          subtitle: 'Learn coping skills',
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => const ResourcesPage()),
+                          ),
                         ),
-                      ),
-                      _ActionTile(
-                        icon: Icons.psychology_alt_outlined,
-                        titleBuilder: (w) => w <= 360 ? 'Aurora Chat' : 'Chat with Aurora',
-                        subtitle: 'Supportive AI companion',
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const AiChatScreen()),
+                        _ActionTile(
+                          icon: Icons.place_outlined,
+                          titleBuilder: (_) => 'Help Near Me',
+                          subtitle: 'Find local support',
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => const HelpNearMePage()),
+                          ),
                         ),
-                      ),
-                    ]),
-                  );
-                },
+                        _ActionTile(
+                          icon: Icons.psychology_alt_outlined,
+                          titleBuilder: (w) =>
+                              w <= 360 ? 'Aurora Chat' : 'Chat with Aurora',
+                          subtitle: 'Supportive AI companion',
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (_) => const AiChatScreen()),
+                          ),
+                        ),
+                      ]),
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -206,8 +235,8 @@ class _ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surface = Colors.white.withValues(alpha: 0.55);
-    const border = Color(0x33000000);
+    final surface = Colors.white.withValues(alpha: 0.65);
+    const border = Color(0x3364B5F6);
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.96, end: 1),
@@ -217,7 +246,7 @@ class _ProfileCard extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -225,7 +254,11 @@ class _ProfileCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: border),
               boxShadow: const [
-                BoxShadow(blurRadius: 18, offset: Offset(0, 10), color: Color(0x14000000)),
+                BoxShadow(
+                  blurRadius: 22,
+                  offset: Offset(0, 12),
+                  color: Color(0x1664B5F6),
+                ),
               ],
             ),
             child: Row(
@@ -236,12 +269,16 @@ class _ProfileCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     gradient: const LinearGradient(
-                      colors: [Color(0xFFF2B8A0), Color(0xFF9AD1C1)],
+                      colors: [
+                        Color(0xFF90CAF9), // light blue
+                        Color(0xFF80DEEA), // teal
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                   ),
-                  child: const Icon(Icons.person_rounded, size: 30, color: Colors.white),
+                  child: const Icon(Icons.person_rounded,
+                      size: 30, color: Colors.white),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -251,7 +288,7 @@ class _ProfileCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              name ?? 'Hello',
+                              name ?? 'Welcome',
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w800,
@@ -262,10 +299,11 @@ class _ProfileCard extends StatelessWidget {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Here’s your hub. Pick an action to get started.',
+                              'Let’s take one gentle step today. 💙',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: DashboardScreen._text.withValues(alpha: 0.7),
+                                color: DashboardScreen._text
+                                    .withValues(alpha: 0.72),
                               ),
                             ),
                           ],
@@ -298,7 +336,7 @@ class _Skeleton extends StatelessWidget {
             width: width,
             height: 14,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.35),
+              color: Colors.white.withValues(alpha: 0.40),
               borderRadius: BorderRadius.circular(6),
             ),
           ),
@@ -328,32 +366,34 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Glass + gradient surface tuned to complement resources page aesthetic.
-    final surface = Colors.white.withValues(alpha: 0.50);
-    const border = Color(0x22000000);
+    final surface = Colors.white.withValues(alpha: 0.60);
+    const border = Color(0x2264B5F6);
     final screenWidth = MediaQuery.sizeOf(context).width;
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.95, end: 1),
       duration: const Duration(milliseconds: 420),
       curve: Curves.easeOutCubic,
-      builder: (context, scale, child) => Transform.scale(scale: scale, child: child),
+      builder: (context, scale, child) =>
+          Transform.scale(scale: scale, child: child),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(22),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            splashColor: Colors.black12,
+            splashColor: Colors.white.withOpacity(0.15),
             highlightColor: Colors.transparent,
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
               child: Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  // Layered gradients for a subtle depth
                   gradient: const LinearGradient(
-                    colors: [Color(0xFFFAF3EB), Color(0xFFF0E7DC)],
+                    colors: [
+                      Color(0xFFE3F2FD), // soft blue
+                      Color(0xFFE0F7FA), // blue-teal
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -361,19 +401,27 @@ class _ActionTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(22),
                   border: Border.all(color: border),
                   boxShadow: const [
-                    BoxShadow(blurRadius: 24, offset: Offset(0, 10), color: Color(0x16000000)),
+                    BoxShadow(
+                      blurRadius: 24,
+                      offset: Offset(0, 12),
+                      color: Color(0x1864B5F6),
+                    ),
                   ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Icon pill
                     Container(
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF9AD1C1), Color(0xFFF2B8A0)],
+                          colors: [
+                            Color(0xFF90CAF9),
+                            Color(0xFF80DEEA),
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -400,7 +448,7 @@ class _ActionTile extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         height: 1.25,
-                        color: DashboardScreen._text.withValues(alpha: 0.7),
+                        color: DashboardScreen._text.withValues(alpha: 0.72),
                       ),
                     ),
                   ],

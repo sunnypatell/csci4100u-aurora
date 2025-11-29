@@ -223,7 +223,7 @@ class _ResourcesPageState extends State<ResourcesPage>
                               onTap: () => _open(context, const ADHDHelpPage()),
                             ),
                             ResourceCard(
-                              title: "Anxiety & Depression",
+                              title: "Anxiety + Mood",
                               subtitle: "Grounding, calm, connection",
                               emoji: "🌊",
                               gradientA:

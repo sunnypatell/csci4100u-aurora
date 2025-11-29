@@ -17,7 +17,10 @@ class JournalService {
 
   String? get userId => _auth.currentUser?.uid;
 
-  /// Streams current user's journal entries ordered newest-first.
+  /// Streams current user's journal entries ordered newest‑first.
+  ///
+  /// Throws a `FirebaseException(code: no-current-user)` if called while no
+  /// user is authenticated (caller should catch and present appropriate UI).
   Stream<QuerySnapshot<Map<String, dynamic>>> journalEntriesStream() {
     final uid = userId;
     if (uid == null) {
@@ -32,7 +35,8 @@ class JournalService {
         .snapshots();
   }
 
-  /// Adds a new journal entry document.
+  /// Adds a new journal entry document for the current user.
+  /// Trims [title] & [content] and stamps server timestamps for creation + update.
   Future<void> addEntry({
     required String title,
     required String content,
@@ -56,7 +60,7 @@ class JournalService {
     });
   }
 
-  /// Deletes a journal entry by id.
+  /// Deletes a journal entry by [entryId] (no-op if it doesn't exist).
   Future<void> deleteEntry(String entryId) async {
     final uid = userId;
     if (uid == null) {
@@ -71,7 +75,8 @@ class JournalService {
         .delete();
   }
 
-  /// Updates an existing entry with provided non-null fields.
+  /// Updates an existing entry (identified by [entryId]) with provided non‑null fields.
+  /// Only changed fields are written; if no changes (besides timestamp) the write is skipped.
   Future<void> updateEntry(
     String entryId, {
     String? title,
@@ -89,7 +94,7 @@ class JournalService {
     if (title != null) update['title'] = title.trim();
     if (content != null) update['content'] = content.trim();
     if (mood != null) update['mood'] = mood;
-    if (update.length == 1) return; // nothing to update besides timestamp
+    if (update.length == 1) return; // only timestamp present => skip Firestore write to reduce churn
     await _db
         .collection('users')
         .doc(uid)
@@ -99,6 +104,7 @@ class JournalService {
   }
 
   /// Fetches a single entry document, returns null if not found.
+  /// Caller can distinguish missing documents by a null return versus exception.
   Future<Map<String, dynamic>?> getEntry(String entryId) async {
     final uid = userId;
     if (uid == null) {

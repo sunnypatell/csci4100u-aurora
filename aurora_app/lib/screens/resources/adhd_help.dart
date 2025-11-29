@@ -165,6 +165,7 @@ class _ADHDHelpPageState extends State<ADHDHelpPage>
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
+        if (!mounted) return;
         showAuroraSnackBar(
           context,
           "Opening $label in your browser…",
@@ -173,6 +174,7 @@ class _ADHDHelpPageState extends State<ADHDHelpPage>
         return;
       }
     } catch (_) {}
+    if (!mounted) return;
     showAuroraSnackBar(
       context,
       "Couldn’t open $label. You can search it manually too.",
@@ -351,12 +353,12 @@ class _ADHDHelpPageState extends State<ADHDHelpPage>
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               borderRadius: BorderRadius.circular(999),
                               boxShadow: [
                                 BoxShadow(
                                   color:
-                                      const Color(0xFF64B5F6).withOpacity(0.3),
+                                      const Color(0xFF64B5F6).withValues(alpha: 0.3),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -565,7 +567,7 @@ class _ADHDHelpPageState extends State<ADHDHelpPage>
                 decoration: InputDecoration(
                   hintText: "Example: Finish my lab, clean my room…",
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.9),
+                  fillColor: Colors.white.withValues(alpha: 0.9),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -765,7 +767,7 @@ class _ADHDHelpPageState extends State<ADHDHelpPage>
                 decoration: InputDecoration(
                   hintText: "Example: Email prof, buy shampoo, idea for later…",
                   filled: true,
-                  fillColor: Colors.white.withOpacity(0.9),
+                  fillColor: Colors.white.withValues(alpha: 0.9),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -827,15 +829,15 @@ class _GlassCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.65),
+            color: Colors.white.withValues(alpha: 0.65),
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: const Color(0xFFBBDEFB).withOpacity(0.9),
+              color: const Color(0xFFBBDEFB).withValues(alpha: 0.9),
               width: 1.1,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF64B5F6).withOpacity(0.25),
+                color: const Color(0xFF64B5F6).withValues(alpha: 0.25),
                 blurRadius: 14,
                 offset: const Offset(0, 8),
               ),

@@ -30,17 +30,23 @@ class RemoteResourceService {
     Quote(text: 'Rest is productive too.', author: 'Aurora', isFallback: true, source: 'Fallback'),
   ];
 
+  /// Fetches a random motivational quote from the remote provider.
+  ///
+  /// On success: returns a [Quote] with `isFallback=false`, `source='RealInspire'`.
+  /// On any failure (network, decode, structure): returns a random fallback quote.
+  ///
+  /// Optional [client] can be injected for testing; always closed in `finally`.
   Future<Quote> fetchRandomQuote({http.Client? client}) async {
     client ??= http.Client();
     try {
-      final resp = await client.get(Uri.parse(_realInspireEndpoint));
+      final resp = await client.get(Uri.parse(_realInspireEndpoint)); // single GET per request cycle
       if (resp.statusCode == 200) {
-        final decoded = jsonDecode(resp.body);
+        final decoded = jsonDecode(resp.body); // decode JSON (expected list)
         if (decoded is List && decoded.isNotEmpty) {
-          final first = decoded.first;
+          final first = decoded.first; // API currently returns one-element array
           if (first is Map<String, dynamic>) {
-            final text = (first['content'] as String?)?.trim();
-            final author = (first['author'] as String?)?.trim();
+            final text = (first['content'] as String?)?.trim(); // quote content
+            final author = (first['author'] as String?)?.trim(); // author name
             if (text != null && text.isNotEmpty) {
               return Quote(
                 text: text,
@@ -57,7 +63,7 @@ class RemoteResourceService {
       throw HttpException('Status ${resp.statusCode}');
     } catch (e) {
       if (kDebugMode && !_loggedFailure) {
-        debugPrint('RealInspire fetch failed: $e');
+        debugPrint('RealInspire fetch failed: $e'); // log only first failure to avoid spam
         _loggedFailure = true;
       }
       return _fallbackList[_rand.nextInt(_fallbackList.length)];

@@ -31,6 +31,9 @@ migrate_working_dir/
 .pub/
 /build/
 
+# Environment files (API keys, secrets)
+.env
+
 # Symbolication related
 app.*.symbols
 

@@ -234,7 +234,7 @@ class _ResourcesPageState extends State<ResourcesPage>
                                   context, const AnxietyDepressionHelpPage()),
                             ),
                             ResourceCard(
-                              title: "More Supports",
+                              title: "Additional Support",
                               subtitle: "Hotlines, journaling, music",
                               emoji: "🧩",
                               gradientA:
@@ -554,7 +554,7 @@ class OtherSupportsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const _SimpleHelpScaffold(
-      title: "More Supports",
+      title: "Additional Support",
       emoji: "🧩",
       bullets: [
         "Study stress, sleep, grief, substance use resources.",

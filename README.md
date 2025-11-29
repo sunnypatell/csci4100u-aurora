@@ -71,24 +71,47 @@ aurora_app/
 
 ## Quick Start (Windows PowerShell)
 ```powershell
-# 1. Clone
 git clone https://github.com/sunnypatell/csci4100u-aurora.git
 cd csci4100u-aurora/aurora_app
-
-# 2. Flutter dependencies
 flutter pub get
-
-# 3. Firebase tooling (global)
-npm i -g firebase-tools
-firebase login
-dart pub global activate flutterfire_cli
-
-# 4. Configure Firebase (creates/updates firebase_options.dart)
-flutterfire configure
-
-# 5. Run (choose a device or Chrome)
 flutter run
 ```
+## Gemini AI Key Setup
+
+Aurora's AI features (journal insight, contextual chat, conversation title generation) require a Gemini API key loaded from an environment file.
+
+Setup via CLI (Windows PowerShell):
+```powershell
+cd aurora_app
+cp .env.example .env
+```
+Then open the `.env` file in your editor and replace `YOUR_KEY_HERE` with your real Gemini API key. Save the file before running.
+
+Run the app:
+```powershell
+flutter pub get
+flutter run
+```
+
+For Web builds if you decide to run on chrome, pass the key via dart-define:
+```powershell
+cd aurora_app
+flutter pub get
+flutter run -d chrome --dart-define=GEMINI_API_KEY=<YOUR_KEY_HERE>
+```
+Your final command for web should look like:
+```powershell
+flutter run -d chrome --dart-define=GEMINI_API_KEY=abracadabra_blah.blah.blah.12345.
+```
+
+
+If the key is missing, AI responses will return a friendly message indicating configuration is needed.
+
+Security notes:
+- The `.env` file is gitignored; do not commit real keys.
+- Rotate keys immediately if leaked.
+- For production, prefer a backend proxy or secure secret manager.
+
 
 ### Prerequisites
 - Install Flutter SDK (`>=3.x`).

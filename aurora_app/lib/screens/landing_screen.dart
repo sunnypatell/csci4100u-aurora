@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'auth/login_screen.dart';
 /// LandingScreen
+///
 /// Unauthenticated entry point presenting calming branding (glowing candle)
-/// and a single path forward ("Begin") into the authentication flow. All
-/// layout values tuned for a centered, tranquil visual hierarchy.
+/// and a single path forward ("Begin") into the authentication flow.
+/// Layout values are tuned for a centered, tranquil visual hierarchy with
+/// intentional whitespace and gentle color palette.
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -19,11 +21,11 @@ class LandingScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Spacer(flex: 2),
+              const Spacer(flex: 2), // reserve top vertical breathing room
               
               _buildGlowingCandle(),
               
-              const SizedBox(height: 56),
+              const SizedBox(height: 56), // generous gap isolates hero from title
               
               const Text(
                 'Aurora',
@@ -36,7 +38,7 @@ class LandingScreen extends StatelessWidget {
                 ),
               ),
               
-              const SizedBox(height: 20),
+              const SizedBox(height: 20), // moderate spacing before tagline
               
               const Text(
                 'A private space to pause, breathe, and\nunderstand your mind.',
@@ -50,11 +52,11 @@ class LandingScreen extends StatelessWidget {
                 ),
               ),
               
-              const SizedBox(height: 56),
+              const SizedBox(height: 56), // strong emphasis separation before primary CTA
               
               _buildBeginButton(context),
               
-              const SizedBox(height: 28),
+              const SizedBox(height: 28), // subtle affirmation spacing
               
               const Text(
                 'Your thoughts stay yours. Always.',
@@ -66,7 +68,7 @@ class LandingScreen extends StatelessWidget {
                 ),
               ),
               
-              const Spacer(flex: 3),
+              const Spacer(flex: 3), // bottom space ensures centered feel across device heights
             ],
           ),
         ),
@@ -153,6 +155,7 @@ class LandingScreen extends StatelessWidget {
     );
   }
 
+  /// Builds the primary CTA used to start the authentication flow.
   Widget _buildBeginButton(BuildContext context) {
     return SizedBox(
       width: double.infinity,

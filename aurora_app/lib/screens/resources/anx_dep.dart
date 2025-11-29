@@ -7,8 +7,8 @@ import 'dart:ui';
 
 // Aurora snackbars
 import 'package:aurora_app/widgets/aurora_snackbar.dart';
-import 'package:firebase_core/firebase_core.dart'; // for FirebaseException
-import 'package:aurora_app/services/journal_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AnxietyDepressionHelpPage extends StatefulWidget {
   const AnxietyDepressionHelpPage({super.key});
@@ -115,10 +115,15 @@ class _AnxietyDepressionHelpPageState extends State<AnxietyDepressionHelpPage>
 
   // resons to stay text list
   final TextEditingController _reasonController = TextEditingController();
-  final List<String> _reasons = [
-    "Sunsets I haven’t seen yet.",
-    "People who haven’t met me yet but will be glad I exist.",
-  ];
+
+  CollectionReference<Map<String, dynamic>>? get _reasonsCol {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return null;
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('reasonsToStay');
+  }
 
   Future<void> _addReason() async {
     final text = _reasonController.text.trim();
@@ -130,39 +135,58 @@ class _AnxietyDepressionHelpPageState extends State<AnxietyDepressionHelpPage>
       );
       return;
     }
-    setState(() {
-      _reasons.insert(0, text);
-      _reasonController.clear();
-    });
-    // Persist reason as a journal entry for reflection.
-    try {
-      await JournalService.instance.addEntry(
-        title: 'Reason to Stay',
-        content: text,
-        mood: 'anxiety_depression',
+    _reasonController.clear();
+    final col = _reasonsCol;
+    if (col == null) {
+      showAuroraSnackBar(
+        context,
+        'Sign in to save reasons',
+        variant: AuroraSnackVariant.error,
       );
+      return;
+    }
+    try {
+      await col.add({
+        'text': text,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      if (!mounted) return;
       if (mounted) {
         showAuroraSnackBar(
           context,
-          'Reason saved to journal ✨',
+          'Reason saved ✨',
           variant: AuroraSnackVariant.success,
         );
       }
-    } on FirebaseException catch (e) {
+    } catch (e) {
       if (mounted) {
         showAuroraSnackBar(
           context,
-          e.code == 'no-current-user'
-              ? 'Sign in to save reasons'
-              : 'Could not save reason (${e.code})',
+          'Failed to save reason',
           variant: AuroraSnackVariant.error,
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteReason(String docId) async {
+    final col = _reasonsCol;
+    if (col == null) return;
+    try {
+      await col.doc(docId).delete();
+      if (!mounted) return;
+      if (mounted) {
+        showAuroraSnackBar(
+          context,
+          'Reason removed',
+          variant: AuroraSnackVariant.info,
         );
       }
     } catch (_) {
       if (mounted) {
         showAuroraSnackBar(
           context,
-          'Unexpected error saving reason',
+          'Could not delete reason',
           variant: AuroraSnackVariant.error,
         );
       }
@@ -639,33 +663,88 @@ class _AnxietyDepressionHelpPageState extends State<AnxietyDepressionHelpPage>
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _reasons
-                          .map(
-                            (r) => Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFF9C4),
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
+                    StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                      stream: _reasonsCol
+                          ?.orderBy('createdAt', descending: true)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (_reasonsCol == null) {
+                          return const Padding(
+                            padding: EdgeInsets.only(top: 8),
+                            child: Text(
+                              'Sign in to save your reasons.',
+                              style: TextStyle(color: Color(0xFF5D4037)),
+                            ),
+                          );
+                        }
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2)),
+                          );
+                        }
+                        final docs = snapshot.data?.docs ?? [];
+                        if (docs.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.only(top: 8),
+                            child: Text(
+                              'No reasons yet. Add one above.',
+                              style: TextStyle(color: Color(0xFF5D4037)),
+                            ),
+                          );
+                        }
+                        return Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (final d in docs)
+                              GestureDetector(
+                                onLongPress: () => _deleteReason(d.id),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFF9C4),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.05),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              child: Text(
-                                r,
-                                style: const TextStyle(
-                                  color: Color(0xFF5D4037),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          (d.data()['text'] ?? '') as String,
+                                          style: const TextStyle(
+                                            color: Color(0xFF5D4037),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      InkWell(
+                                        onTap: () => _deleteReason(d.id),
+                                        borderRadius: BorderRadius.circular(999),
+                                        child: const Icon(
+                                          Icons.close_rounded,
+                                          size: 16,
+                                          color: Color(0xFF5D4037),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          )
-                          .toList(),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),

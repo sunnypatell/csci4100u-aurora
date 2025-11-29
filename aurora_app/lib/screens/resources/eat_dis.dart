@@ -181,6 +181,7 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
                           content: "Prompt: $prompt\n$text",
                           mood: "eating_disorders",
                         );
+                        if (!mounted) return;
                         if (mounted) {
                           showAuroraSnackBar(
                             context,
@@ -189,20 +190,24 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
                           );
                         }
                       } on FirebaseException catch (e) {
-                        // If user not signed in or other Firestore error, surface informative message.
-                        showAuroraSnackBar(
-                          context,
-                          e.code == 'no-current-user'
-                              ? "Sign in to save journal entries"
-                              : "Could not save entry (${e.code})",
-                          variant: AuroraSnackVariant.error,
-                        );
+                        if (mounted) {
+                          // If user not signed in or other Firestore error, surface informative message.
+                          showAuroraSnackBar(
+                            context,
+                            e.code == 'no-current-user'
+                                ? "Sign in to save journal entries"
+                                : "Could not save entry (${e.code})",
+                            variant: AuroraSnackVariant.error,
+                          );
+                        }
                       } catch (_) {
-                        showAuroraSnackBar(
-                          context,
-                          "Unexpected error saving entry",
-                          variant: AuroraSnackVariant.error,
-                        );
+                        if (mounted) {
+                          showAuroraSnackBar(
+                            context,
+                            "Unexpected error saving entry",
+                            variant: AuroraSnackVariant.error,
+                          );
+                        }
                       }
                     },
                     child: const Text("Save"),

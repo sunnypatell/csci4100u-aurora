@@ -7,6 +7,8 @@ import 'dart:ui';
 
 // Aurora snackbars
 import 'package:aurora_app/widgets/aurora_snackbar.dart';
+import 'package:firebase_core/firebase_core.dart'; // for FirebaseException
+import 'package:aurora_app/services/journal_service.dart';
 
 class AnxietyDepressionHelpPage extends StatefulWidget {
   const AnxietyDepressionHelpPage({super.key});
@@ -118,7 +120,7 @@ class _AnxietyDepressionHelpPageState extends State<AnxietyDepressionHelpPage>
     "People who haven’t met me yet but will be glad I exist.",
   ];
 
-  void _addReason() {
+  Future<void> _addReason() async {
     final text = _reasonController.text.trim();
     if (text.isEmpty) {
       showAuroraSnackBar(
@@ -132,6 +134,39 @@ class _AnxietyDepressionHelpPageState extends State<AnxietyDepressionHelpPage>
       _reasons.insert(0, text);
       _reasonController.clear();
     });
+    // Persist reason as a journal entry for reflection.
+    try {
+      await JournalService.instance.addEntry(
+        title: 'Reason to Stay',
+        content: text,
+        mood: 'anxiety_depression',
+      );
+      if (mounted) {
+        showAuroraSnackBar(
+          context,
+          'Reason saved to journal ✨',
+          variant: AuroraSnackVariant.success,
+        );
+      }
+    } on FirebaseException catch (e) {
+      if (mounted) {
+        showAuroraSnackBar(
+          context,
+          e.code == 'no-current-user'
+              ? 'Sign in to save reasons'
+              : 'Could not save reason (${e.code})',
+          variant: AuroraSnackVariant.error,
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        showAuroraSnackBar(
+          context,
+          'Unexpected error saving reason',
+          variant: AuroraSnackVariant.error,
+        );
+      }
+    }
   }
 
   // quick reset card

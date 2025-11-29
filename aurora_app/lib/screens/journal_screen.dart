@@ -43,6 +43,11 @@ class _JournalScreenState extends State<JournalScreen> {
     'tired': '🥱',
     'grateful': '🙏',
     'neutral': '😐',
+    // Resource-origin moods (added so dropdown editing does not assert)
+    'eating_disorders': '🥣',
+    'adhd_focus': '🧠',
+    'adhd_note': '📝',
+    'anxiety_depression': '💙',
   };
 
   /// Maps mood key to a gentle background color.
@@ -253,6 +258,12 @@ class _JournalScreenState extends State<JournalScreen> {
                         DropdownMenuItem(value: 'calm', child: _moodItem('😌','Calm')),
                         DropdownMenuItem(value: 'tired', child: _moodItem('🥱','Tired')),
                         DropdownMenuItem(value: 'grateful', child: _moodItem('🙏','Grateful')),
+                        // If a resource page set a specialized mood, include it so the form doesn't assert.
+                        if (_moodEmoji.containsKey(_selectedMood) && !['neutral','happy','sad','anxious','angry','excited','calm','tired','grateful'].contains(_selectedMood))
+                          DropdownMenuItem(
+                            value: _selectedMood,
+                            child: _moodItem(_moodEmoji[_selectedMood] ?? '📝', _selectedMood.replaceAll('_', ' ')),
+                          ),
                       ],
                       onChanged: (val) {
                         if (val != null) {
@@ -615,6 +626,11 @@ class _JournalScreenState extends State<JournalScreen> {
                   DropdownMenuItem(value: 'calm', child: _moodItem('😌','Calm')),
                   DropdownMenuItem(value: 'tired', child: _moodItem('🥱','Tired')),
                   DropdownMenuItem(value: 'grateful', child: _moodItem('🙏','Grateful')),
+                  if (_moodEmoji.containsKey(mood) && !['neutral','happy','sad','anxious','angry','excited','calm','tired','grateful'].contains(mood))
+                    DropdownMenuItem(
+                      value: mood,
+                      child: _moodItem(_moodEmoji[mood] ?? '📝', mood.replaceAll('_', ' ')),
+                    ),
                 ],
                 onChanged: (val) => mood = val ?? 'neutral',
               ),

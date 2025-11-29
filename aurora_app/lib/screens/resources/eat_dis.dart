@@ -5,6 +5,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 // Aurora snackbars
 import 'package:aurora_app/widgets/aurora_snackbar.dart';
+import 'package:firebase_core/firebase_core.dart'; // for FirebaseException
+import 'package:aurora_app/services/journal_service.dart';
 
 class EatingDisordersHelpPage extends StatefulWidget {
   const EatingDisordersHelpPage({super.key});
@@ -161,17 +163,47 @@ class _EatingDisordersHelpPageState extends State<EatingDisordersHelpPage> {
                       child: const Text("Close")),
                   const SizedBox(width: 10),
                   FilledButton(
-                    onPressed: () {
-                      if (controller.text.trim().isEmpty) {
+                    onPressed: () async {
+                      final text = controller.text.trim();
+                      if (text.isEmpty) {
                         showAuroraSnackBar(
-                            context, "Write a few words first 💙",
-                            variant: AuroraSnackVariant.info);
+                          context,
+                          "Write a few words first 💙",
+                          variant: AuroraSnackVariant.info,
+                        );
                         return;
                       }
                       Navigator.pop(ctx);
-                      showAuroraSnackBar(
-                          context, "Saved locally · add Firestore later",
-                          variant: AuroraSnackVariant.success);
+                      // Attempt Firestore journal save using existing JournalService path.
+                      try {
+                        await JournalService.instance.addEntry(
+                          title: "Eating Disorders Prompt",
+                          content: "Prompt: $prompt\n$text",
+                          mood: "eating_disorders",
+                        );
+                        if (mounted) {
+                          showAuroraSnackBar(
+                            context,
+                            "Entry saved to journal ✨",
+                            variant: AuroraSnackVariant.success,
+                          );
+                        }
+                      } on FirebaseException catch (e) {
+                        // If user not signed in or other Firestore error, surface informative message.
+                        showAuroraSnackBar(
+                          context,
+                          e.code == 'no-current-user'
+                              ? "Sign in to save journal entries"
+                              : "Could not save entry (${e.code})",
+                          variant: AuroraSnackVariant.error,
+                        );
+                      } catch (_) {
+                        showAuroraSnackBar(
+                          context,
+                          "Unexpected error saving entry",
+                          variant: AuroraSnackVariant.error,
+                        );
+                      }
                     },
                     child: const Text("Save"),
                   )

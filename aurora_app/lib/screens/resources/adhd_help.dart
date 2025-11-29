@@ -7,6 +7,8 @@ import 'dart:ui';
 
 // Aurora snackbars
 import 'package:aurora_app/widgets/aurora_snackbar.dart';
+import 'package:firebase_core/firebase_core.dart'; // for FirebaseException
+import 'package:aurora_app/services/journal_service.dart';
 
 class ADHDHelpPage extends StatefulWidget {
   const ADHDHelpPage({super.key});
@@ -84,7 +86,7 @@ class _ADHDHelpPageState extends State<ADHDHelpPage>
   final TextEditingController _taskController = TextEditingController();
   List<String> _taskSteps = [];
 
-  void _breakTask() {
+  Future<void> _breakTask() async {
     final task = _taskController.text.trim();
     if (task.isEmpty) {
       showAuroraSnackBar(
@@ -126,6 +128,39 @@ class _ADHDHelpPageState extends State<ADHDHelpPage>
     }
 
     setState(() => _taskSteps = steps);
+    // Persist original task as a journal entry for later reflection.
+    try {
+      await JournalService.instance.addEntry(
+        title: "ADHD Task Breakdown",
+        content: "Task: $task\nSteps Generated:\n${steps.join('\n')}",
+        mood: "adhd_focus",
+      );
+      if (mounted) {
+        showAuroraSnackBar(
+          context,
+          "Task saved to journal ✨",
+          variant: AuroraSnackVariant.success,
+        );
+      }
+    } on FirebaseException catch (e) {
+      if (mounted) {
+        showAuroraSnackBar(
+          context,
+          e.code == 'no-current-user'
+              ? 'Sign in to save task breakdown'
+              : 'Could not save task (${e.code})',
+          variant: AuroraSnackVariant.error,
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        showAuroraSnackBar(
+          context,
+          'Unexpected error saving task',
+          variant: AuroraSnackVariant.error,
+        );
+      }
+    }
   }
 
   // -----------------------------
@@ -238,7 +273,7 @@ class _ADHDHelpPageState extends State<ADHDHelpPage>
   final TextEditingController _noteController = TextEditingController();
   final List<String> _notes = [];
 
-  void _addNote() {
+  Future<void> _addNote() async {
     final text = _noteController.text.trim();
     if (text.isEmpty) {
       showAuroraSnackBar(
@@ -252,6 +287,39 @@ class _ADHDHelpPageState extends State<ADHDHelpPage>
       _notes.insert(0, text);
       _noteController.clear();
     });
+    // Save quick note as journal entry.
+    try {
+      await JournalService.instance.addEntry(
+        title: 'ADHD Quick Note',
+        content: text,
+        mood: 'adhd_note',
+      );
+      if (mounted) {
+        showAuroraSnackBar(
+          context,
+          'Note saved to journal ✨',
+          variant: AuroraSnackVariant.success,
+        );
+      }
+    } on FirebaseException catch (e) {
+      if (mounted) {
+        showAuroraSnackBar(
+          context,
+          e.code == 'no-current-user'
+              ? 'Sign in to save notes'
+              : 'Could not save note (${e.code})',
+          variant: AuroraSnackVariant.error,
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        showAuroraSnackBar(
+          context,
+          'Unexpected error saving note',
+          variant: AuroraSnackVariant.error,
+        );
+      }
+    }
   }
 
   // -----------------------------

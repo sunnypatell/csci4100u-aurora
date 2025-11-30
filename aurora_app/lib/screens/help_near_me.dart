@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'aurora_shell.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
@@ -181,10 +182,48 @@ class _HelpNearMePageState extends State<HelpNearMePage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFF5EFE7),
         elevation: 0,
+        centerTitle: true,
         title: const Text(
           'Help Near Me',
           style: TextStyle(color: Color(0xFF2F2E2C)),
         ),
+      ),
+      bottomNavigationBar: NavigationBar(
+        // Keep the nav visible on this page so it behaves like other primary
+        // surfaces. Selecting a destination returns the user to the main
+        // `AuroraShell` with the requested tab active.
+        selectedIndex: 0,
+        onDestinationSelected: (i) {
+          // Navigate back to the shell and select the requested tab.
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (_) => AuroraShell(initialIndex: i),
+            ),
+            (route) => false,
+          );
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.dashboard_outlined),
+            selectedIcon: Icon(Icons.dashboard_rounded),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.menu_book_outlined),
+            selectedIcon: Icon(Icons.menu_book_rounded),
+            label: 'Journal',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.library_books_outlined),
+            selectedIcon: Icon(Icons.library_books_rounded),
+            label: 'Resources',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.settings_outlined),
+            selectedIcon: Icon(Icons.settings_rounded),
+            label: 'Settings',
+          ),
+        ],
       ),
       body: CustomScrollView(
         slivers: [

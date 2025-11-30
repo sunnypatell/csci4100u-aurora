@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widgets/aurora_snackbar.dart';
 import '../services/remote_resource_service.dart';
+import 'aurora_shell.dart';
 import '../screens/resources/eat_dis.dart';
 import 'resources/adhd_help.dart';
 import 'resources/anx_dep.dart';
@@ -52,6 +53,8 @@ class _ResourcesPageState extends State<ResourcesPage>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final bool inShell = context.findAncestorWidgetOfExactType<AuroraShell>() != null;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFFF5EFE7),
@@ -90,8 +93,7 @@ class _ResourcesPageState extends State<ResourcesPage>
             future: _quoteFuture,
             builder: (context, snap) {
               final quote = snap.data;
-              if (snap.connectionState == ConnectionState.done &&
-                  _justRefreshed) {
+              if (snap.connectionState == ConnectionState.done && _justRefreshed) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (!mounted) return;
                   final isFallback = quote?.isFallback ?? false;
@@ -255,6 +257,41 @@ class _ResourcesPageState extends State<ResourcesPage>
           ),
         ),
       ),
+      // Show the bottom navigation bar when this page is opened outside of
+      // the main `AuroraShell`, matching behavior of other primary pages.
+      bottomNavigationBar: inShell
+          ? null
+          : NavigationBar(
+              selectedIndex: 2,
+              onDestinationSelected: (i) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => AuroraShell(initialIndex: i)),
+                  (route) => false,
+                );
+              },
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.dashboard_outlined),
+                  selectedIcon: Icon(Icons.dashboard_rounded),
+                  label: 'Home',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.menu_book_outlined),
+                  selectedIcon: Icon(Icons.menu_book_rounded),
+                  label: 'Journal',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.library_books_outlined),
+                  selectedIcon: Icon(Icons.library_books_rounded),
+                  label: 'Resources',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.settings_outlined),
+                  selectedIcon: Icon(Icons.settings_rounded),
+                  label: 'Settings',
+                ),
+              ],
+            ),
     );
   }
 

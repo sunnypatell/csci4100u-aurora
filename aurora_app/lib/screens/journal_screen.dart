@@ -13,6 +13,7 @@ import '../widgets/auth/custom_text_field.dart';
 import '../widgets/aurora_snackbar.dart';
 import '../services/notifications_service.dart';
 import 'timeline_tab.dart';
+import 'aurora_shell.dart';
 
 class JournalScreen extends StatefulWidget {
   const JournalScreen({super.key});
@@ -225,6 +226,7 @@ class _JournalScreenState extends State<JournalScreen> {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final bool inShell = context.findAncestorWidgetOfExactType<AuroraShell>() != null;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5EFE7),
@@ -238,6 +240,39 @@ class _JournalScreenState extends State<JournalScreen> {
         ),
         iconTheme: const IconThemeData(color: Color(0xFF2F2E2C)),
       ),
+      bottomNavigationBar: inShell
+          ? null
+          : NavigationBar(
+              selectedIndex: 1,
+              onDestinationSelected: (i) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => AuroraShell(initialIndex: i)),
+                  (route) => false,
+                );
+              },
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.dashboard_outlined),
+                  selectedIcon: Icon(Icons.dashboard_rounded),
+                  label: 'Home',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.menu_book_outlined),
+                  selectedIcon: Icon(Icons.menu_book_rounded),
+                  label: 'Journal',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.library_books_outlined),
+                  selectedIcon: Icon(Icons.library_books_rounded),
+                  label: 'Resources',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.settings_outlined),
+                  selectedIcon: Icon(Icons.settings_rounded),
+                  label: 'Settings',
+                ),
+              ],
+            ),
       resizeToAvoidBottomInset: true,
       body: user == null
           ? const Center(child: Text('Please sign in to view your journal'))

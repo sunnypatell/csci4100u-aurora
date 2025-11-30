@@ -9,14 +9,16 @@ import 'settings_screen.dart';
 /// primary application areas. Uses an IndexedStack to preserve state of
 /// each tab (e.g. scroll position or in-progress form input).
 class AuroraShell extends StatefulWidget {
-  const AuroraShell({super.key});
+  const AuroraShell({super.key, this.initialIndex = 0});
+
+  final int initialIndex;
 
   @override
   State<AuroraShell> createState() => _AuroraShellState();
 }
 
 class _AuroraShellState extends State<AuroraShell> {
-  int _index = 0;
+  late int _index;
 
   final _pages = const [
     DashboardScreen(),
@@ -24,6 +26,12 @@ class _AuroraShellState extends State<AuroraShell> {
     ResourcesPage(),
     SettingsScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _index = widget.initialIndex;
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -17,7 +17,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../services/auth_service.dart';
-import 'settings_screen.dart';
+// settings_screen.dart is not used here; removed to satisfy analyzer
 import 'journal_screen.dart';
 import 'resources.dart';
 import 'help_near_me.dart';
@@ -42,23 +42,17 @@ class DashboardScreen extends StatelessWidget {
         backgroundColor: colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: const Text(
-          'Dashboard',
-          style: TextStyle(color: _text, fontWeight: FontWeight.w700),
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 12.0),
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(child: _SmallGlowingCandle()),
+          ),
         ),
-        iconTheme: const IconThemeData(color: _text),
+        title: const Text('Dashboard'),
         actions: [
           IconButton(
-            tooltip: 'Settings',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              );
-            },
-            icon: const Icon(Icons.settings_outlined),
-          ),
-          IconButton(
-            tooltip: 'Sign out',
             onPressed: () async {
               final ok = await showDialog<bool>(
                 context: context,
@@ -223,6 +217,102 @@ class DashboardScreen extends StatelessWidget {
   }
 }
 
+/// Small, private copy of the landing screen glowing candle used for the
+/// dashboard AppBar. Kept identical in appearance but scaled down so it
+/// doesn't interfere with AppBar actions.
+class _SmallGlowingCandle extends StatelessWidget {
+  const _SmallGlowingCandle();
+
+  @override
+  Widget build(BuildContext context) {
+    // scaled sizes (matches landing visuals but smaller)
+    const double outer = 44.0;
+    const double middle = outer * 0.72;
+    const double bodyWidth = outer * 0.36;
+    const double bodyHeight = outer * 0.52;
+
+    return SizedBox(
+      width: outer,
+      height: outer,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Outer glow
+          Container(
+            width: outer,
+            height: outer,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  const Color(0xFFF5C97B).withValues(alpha: 0.3),
+                  const Color(0xFFF5C97B).withValues(alpha: 0.0),
+                ],
+                stops: const [0.3, 1.0],
+              ),
+            ),
+          ),
+
+          // Middle glow
+          Container(
+            width: middle,
+            height: middle,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  const Color(0xFFF5C97B).withValues(alpha: 0.5),
+                  const Color(0xFFF5C97B).withValues(alpha: 0.0),
+                ],
+                stops: const [0.4, 1.0],
+              ),
+            ),
+          ),
+
+          // Candle body with inner flame accent.
+          Container(
+            width: bodyWidth,
+            height: bodyHeight,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFFBF5),
+              borderRadius: BorderRadius.circular(25),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFF5C97B).withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const SizedBox(height: bodyHeight * 0.12),
+                // Flame (vertical gradient to suggest warmth).
+                Container(
+                  width: bodyWidth * 0.26,
+                  height: bodyHeight * 0.24,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFFFFFBF5),
+                        Color(0xFFF5C97B),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Private animated glass profile card shown at top of dashboard.
 /// Handles loading (skeleton shimmer substitute), greeting text and subtle
 /// entrance scale animation.
@@ -268,14 +358,14 @@ class _ProfileCard extends StatelessWidget {
                   height: 54,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    gradient: LinearGradient(
-                      colors: [
-                        colorScheme.primary,
-                        colorScheme.primaryContainer,
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                      gradient: LinearGradient(
+                        colors: [
+                          colorScheme.primary.withValues(alpha: 0.72),
+                          colorScheme.primaryContainer.withValues(alpha: 0.58),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
                   ),
                   child: const Icon(Icons.person_rounded,
                       size: 30, color: Colors.white),
@@ -420,8 +510,8 @@ class _ActionTile extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         gradient: LinearGradient(
                           colors: [
-                            colorScheme.primary,
-                            colorScheme.primaryContainer,
+                            colorScheme.primary.withValues(alpha: 0.72),
+                            colorScheme.primaryContainer.withValues(alpha: 0.58),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,

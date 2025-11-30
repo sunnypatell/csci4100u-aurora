@@ -32,8 +32,6 @@ class _JournalScreenState extends State<JournalScreen> {
   // Filter state for entries list
   String _filterMood = 'all'; // mood filter: 'all' or specific mood
   String _entryDateFilter = 'all'; // 'all', '7', '30' (days)
-  String? _lastPromptInserted;
-
 
   int _currentTab = 0;
 
@@ -229,10 +227,11 @@ class _JournalScreenState extends State<JournalScreen> {
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB), // pastel blue
+      backgroundColor: const Color(0xFFF5EFE7),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFEAF4FB), // pastel blue
+        backgroundColor: const Color(0xFFF5EFE7),
         elevation: 0,
+        centerTitle: true,
         title: const Text(
           'Journal',
           style: TextStyle(color: Color(0xFF2F2E2C)),
@@ -263,7 +262,7 @@ class _JournalScreenState extends State<JournalScreen> {
       child: Container(
         height: 42,
         decoration: BoxDecoration(
-          color: const Color(0xFFF7FBFF),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(999),
         ),
         child: Row(
@@ -297,15 +296,14 @@ class _JournalScreenState extends State<JournalScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Container(
                 decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [
-                    Colors.white,
-                    Color(0xFFD9ECFA), // pastel blue wash
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.white,
+                      _moodColor(_selectedMood).withValues(alpha: 0.40),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
@@ -345,31 +343,21 @@ class _JournalScreenState extends State<JournalScreen> {
                       mood: _selectedMood,
                       onTapPrompt: (prompt) {
                         final current = _contentController.text;
-                        final trimmed = current.trim();
-                        final lastPromptTrimmed = (_lastPromptInserted ?? '').trim();
-
-                        if (trimmed.isEmpty || trimmed == lastPromptTrimmed) {
-                          // If the box is empty or only contains the last prompt,
-                          // replace it entirely with the new prompt.
+                        if (current.trim().isEmpty) {
                           _contentController.text = prompt;
                         } else {
-                          // User has started writing real text – keep it
-                          // and (optionally) append the prompt instead.
                           final needsSpace =
                               !current.endsWith(' ') && !current.endsWith('\n');
                           _contentController.text =
                               "$current${needsSpace ? ' ' : ''}$prompt";
                         }
-
-                        _lastPromptInserted = prompt;
-
-                        _contentController.selection = TextSelection.fromPosition(
+                        _contentController.selection =
+                            TextSelection.fromPosition(
                           TextPosition(offset: _contentController.text.length),
                         );
                         setState(() {});
                       },
                     ),
-
                     const SizedBox(height: 12),
                     CustomTextField(
                       controller: _contentController,
@@ -387,8 +375,8 @@ class _JournalScreenState extends State<JournalScreen> {
                       child: ElevatedButton(
                         onPressed: _isSaving ? null : _saveEntry,
                         style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFB7D9F5), // pastel blue
-                        foregroundColor: const Color(0xFF1F2A35),
+                          backgroundColor: const Color(0xFFF2B8A0),
+                          foregroundColor: const Color(0xFF2F2E2C),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -612,7 +600,7 @@ class _JournalScreenState extends State<JournalScreen> {
                   ),
                   const SizedBox(height: 12),
                   StreamBuilder<
-                    QuerySnapshot<Map<String, dynamic>>>(
+                      QuerySnapshot<Map<String, dynamic>>>(
                     stream: JournalService.instance.journalEntriesStream(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState ==
@@ -726,7 +714,8 @@ class _JournalScreenState extends State<JournalScreen> {
                                   gradient: LinearGradient(
                                     colors: [
                                       Colors.white,
-                                      const Color(0xFFD9ECFA).withValues(alpha: 0.55),
+                                      _moodColor(mood)
+                                          .withValues(alpha: 0.60),
                                     ],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
@@ -1018,7 +1007,6 @@ class _TabChip extends StatelessWidget {
   final String text;
   final bool selected;
   final VoidCallback onTap;
-
   const _TabChip({
     required this.text,
     required this.selected,
@@ -1034,28 +1022,16 @@ class _TabChip extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeInOut,
           margin: const EdgeInsets.all(5),
-          padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-            color: selected
-                ? const Color(0xFFB7D9F5) // pastel blue
-                : Colors.transparent,
+            color: selected ? const Color(0xFFF2B8A0) : Colors.transparent,
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(
-              color: selected
-                  ? const Color(0xFF9EC4E0)
-                  : const Color(0xFFBFD8EA),
-              width: selected ? 1.2 : 1.0,
-            ),
           ),
           alignment: Alignment.center,
           child: Text(
             text,
-            textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 14,
-              // no custom `height:` here – let Flutter use default line metrics
-              color: const Color(0xFF0F1A25),
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              color: const Color(0xFF2F2E2C),
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),
         ),
@@ -1063,7 +1039,6 @@ class _TabChip extends StatelessWidget {
     );
   }
 }
-
 
 /// Horizontal row of animated mood chips used for quick selection.
 class _MoodChipRow extends StatelessWidget {
@@ -1193,7 +1168,7 @@ class _PromptRow extends StatelessWidget {
                 backgroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
-                  side: const BorderSide(color: Color(0xFF9EC4E0)),
+                  side: const BorderSide(color: Color(0xFFE0D7CC)),
                 ),
               ),
             // A micro-journal “one sentence check-in”
@@ -1206,7 +1181,7 @@ class _PromptRow extends StatelessWidget {
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(999),
-                side: const BorderSide(color: Color(0xFF9EC4E0)),
+                side: const BorderSide(color: Color(0xFFE0D7CC)),
               ),
             ),
           ],

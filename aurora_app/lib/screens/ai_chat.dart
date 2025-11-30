@@ -229,10 +229,12 @@ class _AiChatScreenState extends State<AiChatScreen> {
       appBar: AppBar(
         backgroundColor: bg,
         elevation: 0,
+        centerTitle: true,
         title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Aurora Chat', style: TextStyle(color: ink)),
+            const Text('Chat with Aurora', style: TextStyle(color: ink)),
             if (_displayName != null)
               Text(
                 'Chatting as ${_displayName!}',

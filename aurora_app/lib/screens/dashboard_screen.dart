@@ -196,8 +196,7 @@ class DashboardScreen extends StatelessWidget {
                         ),
                         _ActionTile(
                           icon: Icons.psychology_alt_outlined,
-                          titleBuilder: (w) =>
-                              w <= 360 ? 'Aurora Chat' : 'Chat with Aurora',
+                          titleBuilder: (_) => 'Chat with Aurora',
                           subtitle: 'Supportive AI companion',
                           onTap: () => Navigator.of(context).push(
                             MaterialPageRoute(

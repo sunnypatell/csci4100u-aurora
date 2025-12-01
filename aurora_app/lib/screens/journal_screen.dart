@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
-/// JournalScreen
-/// Provides a multi-tab journaling interface: compose entries with mood tags,
-/// search/filter existing entries, and visualize mood trends (timeline tab).
-/// Entries are stored per-user in Firestore via JournalService. UX focuses on
-/// low friction: minimal required fields, emoji mood quick picks, and date
-/// formatting helpers for human-friendly “Today / Yesterday” labels.
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+
 import '../services/journal_service.dart';
 import '../widgets/auth/custom_text_field.dart';
 import '../widgets/aurora_snackbar.dart';
@@ -30,13 +25,16 @@ class _JournalScreenState extends State<JournalScreen> {
   String _selectedMood = 'neutral';
   bool _isSaving = false;
 
-  // Filter state for entries list
-  String _filterMood = 'all'; // mood filter: 'all' or specific mood
-  String _entryDateFilter = 'all'; // 'all', '7', '30' (days)
+  // Filters for the entries list
+  String _filterMood = 'all'; // 'all' or specific mood
+  String _entryDateFilter = 'all'; // 'all', '7', '30'
 
   int _currentTab = 0;
 
-  // Primary moods used in the quick picker row
+  // Track last prompt inserted so we can replace it if the user taps another
+  String? _lastPromptInserted;
+
+  // Primary moods used for the quick row
   static const List<String> _primaryMoods = [
     'happy',
     'sad',
@@ -49,7 +47,7 @@ class _JournalScreenState extends State<JournalScreen> {
     'neutral',
   ];
 
-  // Moods -> emoji for display
+  // Moods → emoji
   static const Map<String, String> _moodEmoji = {
     'happy': '😊',
     'sad': '😢',
@@ -60,14 +58,14 @@ class _JournalScreenState extends State<JournalScreen> {
     'tired': '🥱',
     'grateful': '🙏',
     'neutral': '😐',
-    // Resource-origin moods (added so dropdown editing does not assert)
+    // Resource-origin moods (for compatibility)
     'eating_disorders': '🥣',
     'adhd_focus': '🧠',
     'adhd_note': '📝',
     'anxiety_depression': '💙',
   };
 
-  // Gentle mood-specific prompts to surface as quick actions
+  // Mood-specific prompts
   static const Map<String, List<String>> _moodPrompts = {
     'happy': [
       'What made today feel good?',
@@ -111,7 +109,7 @@ class _JournalScreenState extends State<JournalScreen> {
     ],
   };
 
-  /// Maps mood key to a gentle background color.
+  /// Gentle mood tint used for the small pill on entry cards.
   Color _moodColor(String mood) {
     switch (mood) {
       case 'happy':
@@ -130,17 +128,11 @@ class _JournalScreenState extends State<JournalScreen> {
         return const Color(0xFFE9E2F2); // muted purple
       case 'neutral':
       default:
-        return const Color(0xFFF5EFE7); // neutral beige used in theme
+        return const Color(0xFFF5EFE7); // neutral beige
     }
   }
 
-  // Static helper so stateless widgets can access mood colors.
-  static Color _moodColorStatic(String mood) {
-    // Safe because this method doesn't depend on any instance state.
-    return _JournalScreenState()._moodColor(mood);
-  }
-
-  /// Produces a friendly timestamp (Today / Yesterday / explicit date).
+  /// Friendly timestamp (Today / Yesterday / date).
   String _formatWhen(DateTime when) {
     final now = DateTime.now();
     final local = when.toLocal();
@@ -159,7 +151,7 @@ class _JournalScreenState extends State<JournalScreen> {
     return DateFormat('MMM d, y • h:mm a').format(local);
   }
 
-  // Reusable mood item widget for dropdowns (emoji + label)
+  // Emoji + label widget used in dropdowns
   static Widget _moodItem(String emoji, String label) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -179,8 +171,6 @@ class _JournalScreenState extends State<JournalScreen> {
     super.dispose();
   }
 
-  /// Persists a new journal entry after basic emptiness check. Resets fields
-  /// & mood selection on success, surfacing status via snackbar.
   Future<void> _saveEntry() async {
     if (_titleController.text.trim().isEmpty &&
         _contentController.text.trim().isEmpty) {
@@ -191,6 +181,7 @@ class _JournalScreenState extends State<JournalScreen> {
       );
       return;
     }
+
     setState(() => _isSaving = true);
     try {
       await JournalService.instance.addEntry(
@@ -201,13 +192,13 @@ class _JournalScreenState extends State<JournalScreen> {
       if (!mounted) return;
       _titleController.clear();
       _contentController.clear();
+      _lastPromptInserted = null;
       setState(() => _selectedMood = 'neutral');
       showAuroraSnackBar(
         context,
         'Journal entry saved! 📝',
         variant: AuroraSnackVariant.success,
       );
-      // Ensure a daily reminder exists; non-forced call avoids duplication.
       await NotificationService.instance.scheduleDailyJournalReminder();
     } catch (e) {
       if (!mounted) return;
@@ -229,50 +220,49 @@ class _JournalScreenState extends State<JournalScreen> {
     final bool inShell = context.findAncestorWidgetOfExactType<AuroraShell>() != null;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5EFE7),
+      backgroundColor: const Color(0xFFEAF4FB), // pastel blue
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5EFE7),
+        backgroundColor: const Color(0xFFEAF4FB),
         elevation: 0,
-        centerTitle: true,
         title: const Text(
           'Journal',
-          style: TextStyle(color: Color(0xFF2F2E2C)),
+          style: TextStyle(color: Color(0xFF0F1A25)),
         ),
-        iconTheme: const IconThemeData(color: Color(0xFF2F2E2C)),
+        iconTheme: const IconThemeData(color: Color(0xFF0F1A25)),
       ),
       bottomNavigationBar: inShell
-          ? null
-          : NavigationBar(
-              selectedIndex: 1,
-              onDestinationSelected: (i) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => AuroraShell(initialIndex: i)),
-                  (route) => false,
-                );
-              },
-              destinations: const [
-                NavigationDestination(
-                  icon: Icon(Icons.dashboard_outlined),
-                  selectedIcon: Icon(Icons.dashboard_rounded),
-                  label: 'Home',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.menu_book_outlined),
-                  selectedIcon: Icon(Icons.menu_book_rounded),
-                  label: 'Journal',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.library_books_outlined),
-                  selectedIcon: Icon(Icons.library_books_rounded),
-                  label: 'Resources',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.settings_outlined),
-                  selectedIcon: Icon(Icons.settings_rounded),
-                  label: 'Settings',
-                ),
-              ],
-            ),
+        ? null
+        : NavigationBar(
+            selectedIndex: 1,
+            onDestinationSelected: (i) {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => AuroraShell(initialIndex: i)),
+                (route) => false,
+              );
+            },
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.dashboard_outlined),
+                selectedIcon: Icon(Icons.dashboard_rounded),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.menu_book_outlined),
+                selectedIcon: Icon(Icons.menu_book_rounded),
+                label: 'Journal',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.library_books_outlined),
+                selectedIcon: Icon(Icons.library_books_rounded),
+                label: 'Resources',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.settings_outlined),
+                selectedIcon: Icon(Icons.settings_rounded),
+                label: 'Settings',
+              ),
+            ],
+          ),
       resizeToAvoidBottomInset: true,
       body: user == null
           ? const Center(child: Text('Please sign in to view your journal'))
@@ -297,7 +287,7 @@ class _JournalScreenState extends State<JournalScreen> {
       child: Container(
         height: 42,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFFF7FBFF),
           borderRadius: BorderRadius.circular(999),
         ),
         child: Row(
@@ -319,6 +309,10 @@ class _JournalScreenState extends State<JournalScreen> {
   }
 
   Widget _buildEntriesContent(BuildContext context) {
+      final moodTint = Color.alphaBlend(
+        _moodColor(_selectedMood).withValues(alpha: 0.5),
+        const Color(0xFFD9ECFA),
+      );
     return SafeArea(
       child: SingleChildScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -326,7 +320,7 @@ class _JournalScreenState extends State<JournalScreen> {
             EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom + 24),
         child: Column(
           children: [
-            // Input card
+            // Entry input card
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Container(
@@ -334,7 +328,7 @@ class _JournalScreenState extends State<JournalScreen> {
                   gradient: LinearGradient(
                     colors: [
                       Colors.white,
-                      _moodColor(_selectedMood).withValues(alpha: 0.40),
+                      moodTint, // pastel blue wash
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -363,7 +357,7 @@ class _JournalScreenState extends State<JournalScreen> {
                       'Mood',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Color(0xFF6F6C66),
+                        color: Color(0xFF50697F),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -378,7 +372,12 @@ class _JournalScreenState extends State<JournalScreen> {
                       mood: _selectedMood,
                       onTapPrompt: (prompt) {
                         final current = _contentController.text;
-                        if (current.trim().isEmpty) {
+                        final trimmed = current.trim();
+                        final lastPromptTrimmed =
+                            (_lastPromptInserted ?? '').trim();
+
+                        if (trimmed.isEmpty || trimmed == lastPromptTrimmed) {
+                          // Replace previous prompt or empty text
                           _contentController.text = prompt;
                         } else {
                           final needsSpace =
@@ -386,6 +385,9 @@ class _JournalScreenState extends State<JournalScreen> {
                           _contentController.text =
                               "$current${needsSpace ? ' ' : ''}$prompt";
                         }
+
+                        _lastPromptInserted = prompt;
+
                         _contentController.selection =
                             TextSelection.fromPosition(
                           TextPosition(offset: _contentController.text.length),
@@ -410,8 +412,8 @@ class _JournalScreenState extends State<JournalScreen> {
                       child: ElevatedButton(
                         onPressed: _isSaving ? null : _saveEntry,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFF2B8A0),
-                          foregroundColor: const Color(0xFF2F2E2C),
+                          backgroundColor: const Color(0xFFB7D9F5),
+                          foregroundColor: const Color(0xFF1F2A35),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -424,7 +426,7 @@ class _JournalScreenState extends State<JournalScreen> {
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation(
-                                    Color(0xFF2F2E2C),
+                                    Color(0xFF1F2A35),
                                   ),
                                 ),
                               )
@@ -442,6 +444,7 @@ class _JournalScreenState extends State<JournalScreen> {
               ),
             ),
             const SizedBox(height: 4),
+            // Entries list, search + filters
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
@@ -454,15 +457,13 @@ class _JournalScreenState extends State<JournalScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF2F2E2C),
+                        color: Color(0xFF0F1A25),
                       ),
                     ),
                   ),
                   const SizedBox(height: 10),
-                  // Search and filter row
                   Row(
                     children: [
-                      // Search by title
                       Expanded(
                         child: TextField(
                           controller: _searchController,
@@ -493,15 +494,15 @@ class _JournalScreenState extends State<JournalScreen> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      // Mood filter dropdown
                       DropdownButtonHideUnderline(
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
-                            border:
-                                Border.all(color: const Color(0xFFE8E4DC)),
+                            border: Border.all(
+                              color: const Color(0xFF9EC4E0),
+                            ),
                           ),
                           child: DropdownButton<String>(
                             value: _filterMood,
@@ -555,14 +556,13 @@ class _JournalScreenState extends State<JournalScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  // Mood + Date Range Filters
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Wrap(
                       spacing: 8,
                       runSpacing: 4,
                       children: [
-                        // --- Mood Filter Pills ---
+                        // mood filter pills
                         _FilterChipPill(
                           label: 'All moods',
                           selected: _filterMood == 'all',
@@ -610,8 +610,7 @@ class _JournalScreenState extends State<JournalScreen> {
                           selected: _filterMood == 'neutral',
                           onTap: () => setState(() => _filterMood = 'neutral'),
                         ),
-
-                        // --- Date Range Filters ---
+                        // date filters
                         _FilterChipPill(
                           label: 'All time',
                           selected: _entryDateFilter == 'all',
@@ -621,30 +620,24 @@ class _JournalScreenState extends State<JournalScreen> {
                         _FilterChipPill(
                           label: 'Last 7 days',
                           selected: _entryDateFilter == '7',
-                          onTap: () =>
-                              setState(() => _entryDateFilter = '7'),
+                          onTap: () => setState(() => _entryDateFilter = '7'),
                         ),
                         _FilterChipPill(
                           label: 'Last 30 days',
                           selected: _entryDateFilter == '30',
-                          onTap: () =>
-                              setState(() => _entryDateFilter = '30'),
+                          onTap: () => setState(() => _entryDateFilter = '30'),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 12),
-                  StreamBuilder<
-                      QuerySnapshot<Map<String, dynamic>>>(
+                  StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                     stream: JournalService.instance.journalEntriesStream(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState ==
                           ConnectionState.waiting) {
                         return const Padding(
-                          padding: EdgeInsets.only(
-                            top: 24.0,
-                            bottom: 40.0,
-                          ),
+                          padding: EdgeInsets.only(top: 24.0, bottom: 40.0),
                           child: Center(child: CircularProgressIndicator()),
                         );
                       }
@@ -652,7 +645,6 @@ class _JournalScreenState extends State<JournalScreen> {
                       List<QueryDocumentSnapshot<Map<String, dynamic>>> docs =
                           snapshot.data?.docs ?? [];
 
-                      // Client-side filtering: mood, date range, title search
                       final q =
                           _searchController.text.trim().toLowerCase();
 
@@ -749,8 +741,8 @@ class _JournalScreenState extends State<JournalScreen> {
                                   gradient: LinearGradient(
                                     colors: [
                                       Colors.white,
-                                      _moodColor(mood)
-                                          .withValues(alpha: 0.60),
+                                      const Color(0xFFD9ECFA)
+                                          .withValues(alpha: 0.55),
                                     ],
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
@@ -780,7 +772,7 @@ class _JournalScreenState extends State<JournalScreen> {
                                             style: const TextStyle(
                                               fontSize: 15,
                                               fontWeight: FontWeight.w600,
-                                              color: Color(0xFF2F2E2C),
+                                              color: Color(0xFF0F1A25),
                                             ),
                                           ),
                                         ),
@@ -807,7 +799,7 @@ class _JournalScreenState extends State<JournalScreen> {
                                               ),
                                               const SizedBox(width: 6),
                                               Text(
-                                                mood,
+                                                mood.replaceAll('_', ' '),
                                                 style: const TextStyle(
                                                   fontSize: 12,
                                                   color:
@@ -824,7 +816,7 @@ class _JournalScreenState extends State<JournalScreen> {
                                       content,
                                       style: const TextStyle(
                                         fontSize: 13.5,
-                                        color: Color(0xFF6F6C66),
+                                        color: Color(0xFF50697F),
                                       ),
                                       maxLines: 6,
                                       overflow: TextOverflow.fade,
@@ -891,7 +883,7 @@ class _JournalScreenState extends State<JournalScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF2F2E2C),
+                  color: Color(0xFF0F1A25),
                 ),
               ),
               const SizedBox(height: 12),
@@ -905,7 +897,7 @@ class _JournalScreenState extends State<JournalScreen> {
                 'Mood',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Color(0xFF6F6C66),
+                  color: Color(0xFF50697F),
                 ),
               ),
               const SizedBox(height: 6),
@@ -913,17 +905,17 @@ class _JournalScreenState extends State<JournalScreen> {
                 initialValue: mood,
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: const Color(0xFFF5EFE7),
+                  fillColor: const Color(0xFFEAF4FB),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(
-                      color: Color(0xFFF2B8A0),
+                      color: Color(0xFF9EC4E0),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(
-                      color: Color(0xFFF2B8A0),
+                      color: Color(0xFF9EC4E0),
                       width: 2,
                     ),
                   ),
@@ -1003,8 +995,8 @@ class _JournalScreenState extends State<JournalScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF2B8A0),
-                    foregroundColor: const Color(0xFF2F2E2C),
+                    backgroundColor: const Color(0xFFB7D9F5),
+                    foregroundColor: const Color(0xFF1F2A35),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -1042,6 +1034,7 @@ class _TabChip extends StatelessWidget {
   final String text;
   final bool selected;
   final VoidCallback onTap;
+
   const _TabChip({
     required this.text,
     required this.selected,
@@ -1057,16 +1050,27 @@ class _TabChip extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeInOut,
           margin: const EdgeInsets.all(5),
+          padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFFF2B8A0) : Colors.transparent,
+            color: selected
+                ? const Color(0xFFB7D9F5)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: selected
+                  ? const Color(0xFF9EC4E0)
+                  : const Color(0xFFBFD8EA),
+              width: selected ? 1.2 : 1.0,
+            ),
           ),
           alignment: Alignment.center,
           child: Text(
             text,
+            textAlign: TextAlign.center,
             style: TextStyle(
-              color: const Color(0xFF2F2E2C),
-              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+              fontSize: 14,
+              color: const Color(0xFF0F1A25),
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
             ),
           ),
         ),
@@ -1130,14 +1134,13 @@ class _MoodChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: selected
-              ? _JournalScreenState._moodColorStatic(mood)
-                  .withValues(alpha: 0.4)
+              ? const Color(0xFFB7D9F5).withValues(alpha: 0.40)
               : Colors.white,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
             color: selected
-                ? _JournalScreenState._moodColorStatic(mood)
-                : const Color(0xFFE0D7CC),
+                ? const Color(0xFF9EC4E0)
+                : const Color(0xFFAEC9DD),
           ),
         ),
         child: Row(
@@ -1150,7 +1153,7 @@ class _MoodChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                color: const Color(0xFF2F2E2C),
+                color: const Color(0xFF0F1A25),
               ),
             ),
           ],
@@ -1160,7 +1163,7 @@ class _MoodChip extends StatelessWidget {
   }
 }
 
-/// Shows a few quick prompts that insert text into the entry when tapped.
+/// Quick prompts row under mood chips.
 class _PromptRow extends StatelessWidget {
   final String mood;
   final ValueChanged<String> onTapPrompt;
@@ -1185,7 +1188,7 @@ class _PromptRow extends StatelessWidget {
           'Need inspiration?',
           style: TextStyle(
             fontSize: 12,
-            color: Color(0xFF6F6C66),
+            color: Color(0xFF50697F),
           ),
         ),
         const SizedBox(height: 4),
@@ -1203,10 +1206,9 @@ class _PromptRow extends StatelessWidget {
                 backgroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
-                  side: const BorderSide(color: Color(0xFFE0D7CC)),
+                  side: const BorderSide(color: Color(0xFF9EC4E0)),
                 ),
               ),
-            // A micro-journal “one sentence check-in”
             ActionChip(
               label: const Text(
                 'One-sentence check-in',
@@ -1216,7 +1218,7 @@ class _PromptRow extends StatelessWidget {
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(999),
-                side: const BorderSide(color: Color(0xFFE0D7CC)),
+                side: const BorderSide(color: Color(0xFF9EC4E0)),
               ),
             ),
           ],
@@ -1247,13 +1249,13 @@ class _FilterChipPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: selected
-              ? const Color(0xFFF2B8A0).withValues(alpha: 0.4)
+              ? const Color(0xFFB7D9F5).withValues(alpha: 0.40)
               : Colors.white,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
             color: selected
-                ? const Color(0xFFF2B8A0)
-                : const Color(0xFFE0D7CC),
+                ? const Color(0xFF9EC4E0)
+                : const Color(0xFFAEC9DD),
           ),
         ),
         child: Text(
@@ -1261,7 +1263,7 @@ class _FilterChipPill extends StatelessWidget {
           style: TextStyle(
             fontSize: 11,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-            color: const Color(0xFF2F2E2C),
+            color: const Color(0xFF0F1A25),
           ),
         ),
       ),

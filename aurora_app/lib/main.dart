@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 /// AuroraApp sets up global theming (Material 3 + seeded color scheme) and
 /// provides a transparent SnackBar theme since we use a custom overlay toast.
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'screens/landing_screen.dart';
 // import 'screens/auth/login_screen.dart'; // not needed when Landing is the unauthenticated start
@@ -30,6 +31,11 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  // Set Firebase Auth language for hosted messages (e.g., password reset emails)
+  try {
+    final deviceLang = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    await FirebaseAuth.instance.setLanguageCode(deviceLang);
+  } catch (_) {/* ignore */}
   await NotificationService.instance.init();
   await NotificationService.instance.requestPermissions();
   // Schedule journal reminder if not already set (non-forced call).

@@ -177,6 +177,7 @@ class _HelpNearMePageState extends State<HelpNearMePage> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final bool inShell = context.findAncestorWidgetOfExactType<AuroraShell>() != null;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5EFE7),
@@ -198,43 +199,53 @@ class _HelpNearMePageState extends State<HelpNearMePage> {
           style: TextStyle(color: Color(0xFF2F2E2C)),
         ),
       ),
-      bottomNavigationBar: NavigationBar(
-        // Keep the nav visible on this page so it behaves like other primary
-        // surfaces. Selecting a destination returns the user to the main
-        // `AuroraShell` with the requested tab active.
-        selectedIndex: 0,
-        onDestinationSelected: (i) {
-          // Navigate back to the shell and select the requested tab.
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (_) => AuroraShell(initialIndex: i),
+      bottomNavigationBar: inShell
+          ? null
+          : NavigationBar(
+              // When opened directly (outside the shell), provide a
+              // consistent navbar and route back into the shell.
+              selectedIndex: 3,
+              onDestinationSelected: (i) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (_) => AuroraShell(initialIndex: i),
+                  ),
+                  (route) => false,
+                );
+              },
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.dashboard_outlined),
+                  selectedIcon: Icon(Icons.dashboard_rounded),
+                  label: 'Home',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.menu_book_outlined),
+                  selectedIcon: Icon(Icons.menu_book_rounded),
+                  label: 'Journal',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.library_books_outlined),
+                  selectedIcon: Icon(Icons.library_books_rounded),
+                  label: 'Resources',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.place_outlined),
+                  selectedIcon: Icon(Icons.place_rounded),
+                  label: 'Help Nearby',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.psychology_alt_outlined),
+                  selectedIcon: Icon(Icons.psychology_alt_rounded),
+                  label: 'Chat',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.settings_outlined),
+                  selectedIcon: Icon(Icons.settings_rounded),
+                  label: 'Settings',
+                ),
+              ],
             ),
-            (route) => false,
-          );
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard_rounded),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book_rounded),
-            label: 'Journal',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.library_books_outlined),
-            selectedIcon: Icon(Icons.library_books_rounded),
-            label: 'Resources',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings_rounded),
-            label: 'Settings',
-          ),
-        ],
-      ),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(

@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import '../services/auth_service.dart';
 import '../widgets/aurora_snackbar.dart';
 import '../widgets/small_glowing_candle.dart';
+import 'aurora_shell.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -129,7 +130,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       );
       if (!mounted) return;
       showAuroraSnackBar(context, 'Profile updated', variant: AuroraSnackVariant.success);
-      Navigator.pop(context);
+      // If Settings is shown as a tab inside AuroraShell, do not pop the
+      // route (popping would expose a blank screen). Only pop when this page
+      // was pushed as a standalone route.
+      final inShell = context.findAncestorWidgetOfExactType<AuroraShell>() != null;
+      if (!inShell && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
     } catch (e) {
       final msg = AuthService.instance.mapAuthError(e);
       if (mounted) {

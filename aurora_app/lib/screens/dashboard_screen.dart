@@ -18,10 +18,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../services/auth_service.dart';
 // settings_screen.dart is not used here; removed to satisfy analyzer
-import 'journal_screen.dart';
-import 'resources.dart';
-import 'help_near_me.dart';
-import 'ai_chat.dart';
+import 'aurora_shell.dart';
 import '../widgets/small_glowing_candle.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -169,7 +166,9 @@ class DashboardScreen extends StatelessWidget {
                         constraints.crossAxisExtent.clamp(280.0, 1200.0);
                     final isWide = viewportWidth >= 680;
                     final crossAxisCount = isWide ? 4 : 2;
-                    final childAspectRatio = isWide ? 1.1 : 0.95;
+                    // Give tiles a bit more vertical room on phones to avoid
+                    // text overflow in languages or long titles.
+                    final childAspectRatio = isWide ? 1.1 : 0.85;
 
                     return SliverGrid(
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -183,37 +182,26 @@ class DashboardScreen extends StatelessWidget {
                           icon: Icons.menu_book_rounded,
                           titleBuilder: (_) => 'Open Journal',
                           subtitle: 'Write and reflect',
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) => const JournalScreen()),
-                          ),
+                          onTap: () => AuroraShell.navigateTo(context, 1),
                         ),
                         _ActionTile(
                           icon: Icons.library_books_outlined,
                           titleBuilder: (_) => 'Resources',
                           subtitle: 'Learn coping skills',
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) => const ResourcesPage()),
-                          ),
+                          onTap: () => AuroraShell.navigateTo(context, 2),
                         ),
                         _ActionTile(
                           icon: Icons.place_outlined,
                           titleBuilder: (_) => 'Help Near Me',
                           subtitle: 'Find local support',
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) => const HelpNearMePage()),
-                          ),
+                          onTap: () => AuroraShell.navigateTo(context, 3),
                         ),
                         _ActionTile(
                           icon: Icons.psychology_alt_outlined,
-                          titleBuilder: (_) => 'Chat with Aurora',
+                          titleBuilder: (w) =>
+                              w < 380 ? 'Aurora Chat' : 'Chat with Aurora',
                           subtitle: 'Supportive AI companion',
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) => const AiChatScreen()),
-                          ),
+                          onTap: () => AuroraShell.navigateTo(context, 4),
                         ),
                       ]),
                     );
@@ -304,8 +292,9 @@ class _ProfileCard extends StatelessWidget {
                                 fontWeight: FontWeight.w800,
                                 color: DashboardScreen._text,
                               ),
-                              maxLines: 1,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
+                              softWrap: true,
                             ),
                             const SizedBox(height: 6),
                             Text(
@@ -398,7 +387,7 @@ class _ActionTile extends StatelessWidget {
                 child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
               child: Container(
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -421,6 +410,7 @@ class _ActionTile extends StatelessWidget {
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     // Icon pill
                     Container(
@@ -439,27 +429,31 @@ class _ActionTile extends StatelessWidget {
                       ),
                       child: Icon(icon, color: Colors.white, size: 26),
                     ),
-                    const Spacer(),
-                    Text(
-                      titleBuilder(screenWidth),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      softWrap: true,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: DashboardScreen._text,
+                    const SizedBox(height: 12),
+                    Flexible(
+                      child: Text(
+                        titleBuilder(screenWidth),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: DashboardScreen._text,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      subtitle,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 13,
-                        height: 1.25,
-                        color: DashboardScreen._text.withValues(alpha: 0.72),
+                    Flexible(
+                      child: Text(
+                        subtitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.25,
+                          color: DashboardScreen._text.withValues(alpha: 0.72),
+                        ),
                       ),
                     ),
                   ],

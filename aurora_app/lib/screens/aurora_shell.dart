@@ -15,6 +15,12 @@ class AuroraShell extends StatefulWidget {
 
   final int initialIndex;
 
+  /// Programmatically switch tabs from anywhere inside the shell subtree.
+  static void navigateTo(BuildContext context, int index) {
+    final state = context.findAncestorStateOfType<_AuroraShellState>();
+    state?._setIndex(index);
+  }
+
   @override
   State<AuroraShell> createState() => _AuroraShellState();
 }
@@ -27,6 +33,7 @@ class _AuroraShellState extends State<AuroraShell> {
     JournalScreen(),
     ResourcesPage(),
     HelpNearMePage(),
+    AiChatScreen(),
     SettingsScreen(),
   ];
 
@@ -41,53 +48,56 @@ class _AuroraShellState extends State<AuroraShell> {
     return Scaffold(
       // Outer scaffold only provides nav bar; inner pages manage their own AppBars.
       body: IndexedStack(index: _index, children: _pages),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) {
-          // Destination indices: 0=Home,1=Journal,2=Resources,3=HelpNearby,4=Chat,5=Settings
-          // Our internal pages omit Chat, so map taps to pages and handle Chat as a standalone route.
-          if (i == 4) {
-            // Open Chat as a standalone screen (outside the shell) so the navbar there omits Chat.
-            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AiChatScreen()));
-            return;
-          }
-
-          final pageIndex = i < 4 ? i : i - 1; // shift indices after Chat
-          setState(() => _index = pageIndex);
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard_rounded),
-            label: 'Home',
+      bottomNavigationBar: NavigationBarTheme(
+        data: NavigationBarThemeData(
+          // Slightly smaller label text to reduce wrap on narrow phones
+          labelTextStyle: WidgetStateProperty.all(
+            const TextStyle(fontSize: 11),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book_rounded),
-            label: 'Journal',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.library_books_outlined),
-            selectedIcon: Icon(Icons.library_books_rounded),
-            label: 'Resources',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.place_outlined),
-            selectedIcon: Icon(Icons.place_rounded),
-            label: 'Help Nearby',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.psychology_alt_outlined),
-            selectedIcon: Icon(Icons.psychology_alt_rounded),
-            label: 'Chat',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings_rounded),
-            label: 'Settings',
-          ),
-        ],
+        ),
+        child: NavigationBar(
+          labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+          selectedIndex: _index,
+          onDestinationSelected: (i) => _setIndex(i),
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.dashboard_outlined),
+              selectedIcon: Icon(Icons.dashboard_rounded),
+              label: 'Home',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.menu_book_outlined),
+              selectedIcon: Icon(Icons.menu_book_rounded),
+              label: 'Journal',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.library_books_outlined),
+              selectedIcon: Icon(Icons.library_books_rounded),
+              label: 'Resources',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.place_outlined),
+              selectedIcon: Icon(Icons.place_rounded),
+              label: 'Help Nearby',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.psychology_alt_outlined),
+              selectedIcon: Icon(Icons.psychology_alt_rounded),
+              label: 'Chat',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.settings_outlined),
+              selectedIcon: Icon(Icons.settings_rounded),
+              label: 'Settings',
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  void _setIndex(int i) {
+    if (i < 0 || i >= _pages.length) return;
+    setState(() => _index = i);
   }
 }

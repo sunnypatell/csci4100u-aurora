@@ -137,8 +137,18 @@ class DashboardScreen extends StatelessWidget {
                                   orElse: () => 'friend',
                                 )!;
 
+                                String capitalizeName(String raw) {
+                                  if (raw.contains('@')) return raw;
+                                  return raw
+                                      .split(RegExp(r"\s+"))
+                                      .map((w) => w.isEmpty
+                                          ? w
+                                          : '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}')
+                                      .join(' ');
+                                }
+
                                 return _ProfileCard(
-                                  name: 'Welcome back, $name',
+                                  name: 'Welcome back, ${capitalizeName(name)}',
                                 );
                               },
                             )

@@ -219,11 +219,12 @@ class _JournalScreenState extends State<JournalScreen> {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final bool inShell = context.findAncestorWidgetOfExactType<AuroraShell>() != null;
+    final cs = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB), // pastel blue
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFEAF4FB),
+      return Scaffold(
+        backgroundColor: cs.surface,
+        appBar: AppBar(
+          backgroundColor: cs.surface,
         elevation: 0,
         centerTitle: true,
         leading: const Padding(
@@ -296,13 +297,13 @@ class _JournalScreenState extends State<JournalScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Container(
         height: 42,
-        decoration: BoxDecoration(
-          color: const Color(0xFFF7FBFF),
-          borderRadius: BorderRadius.circular(999),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.98),
+              borderRadius: BorderRadius.circular(999),
         ),
         child: Row(
           children: [
-            _TabChip(
+                _TabChip(
               text: 'Entries',
               selected: _currentTab == 0,
               onTap: () => setState(() => _currentTab = 0),
@@ -318,10 +319,11 @@ class _JournalScreenState extends State<JournalScreen> {
     );
   }
 
-  Widget _buildEntriesContent(BuildContext context) {
+    Widget _buildEntriesContent(BuildContext context) {
+      final cs = Theme.of(context).colorScheme;
       final moodTint = Color.alphaBlend(
         _moodColor(_selectedMood).withValues(alpha: 0.5),
-        const Color(0xFFD9ECFA),
+        cs.surface,
       );
     return SafeArea(
       child: SingleChildScrollView(
@@ -363,11 +365,11 @@ class _JournalScreenState extends State<JournalScreen> {
                       textCapitalization: TextCapitalization.sentences,
                     ),
                     const SizedBox(height: 12),
-                    const Text(
+                    Text(
                       'Mood',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Color(0xFF50697F),
+                        color: cs.onSurface.withValues(alpha: 0.72),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -422,21 +424,21 @@ class _JournalScreenState extends State<JournalScreen> {
                       child: ElevatedButton(
                         onPressed: _isSaving ? null : _saveEntry,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFB7D9F5),
-                          foregroundColor: const Color(0xFF1F2A35),
+                          backgroundColor: cs.primary,
+                          foregroundColor: cs.onPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
                         child: _isSaving
-                            ? const SizedBox(
+                            ? SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation(
-                                    Color(0xFF1F2A35),
+                                    cs.onPrimary,
                                   ),
                                 ),
                               )
@@ -460,14 +462,14 @@ class _JournalScreenState extends State<JournalScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Align(
+                  Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Your entries',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF0F1A25),
+                        color: cs.onSurface,
                       ),
                     ),
                   ),
@@ -517,49 +519,18 @@ class _JournalScreenState extends State<JournalScreen> {
                           child: DropdownButton<String>(
                             value: _filterMood,
                             items: [
-                              DropdownMenuItem(
-                                value: 'all',
-                                child: _moodItem('🌐', 'All'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'happy',
-                                child: _moodItem('😊', 'Happy'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'sad',
-                                child: _moodItem('😢', 'Sad'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'anxious',
-                                child: _moodItem('😰', 'Anxious'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'angry',
-                                child: _moodItem('😠', 'Angry'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'excited',
-                                child: _moodItem('🤩', 'Excited'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'calm',
-                                child: _moodItem('😌', 'Calm'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'tired',
-                                child: _moodItem('🥱', 'Tired'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'grateful',
-                                child: _moodItem('🙏', 'Grateful'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'neutral',
-                                child: _moodItem('😐', 'Neutral'),
-                              ),
+                              DropdownMenuItem(value: 'all', child: _moodItem('🌐', 'All')),
+                              DropdownMenuItem(value: 'happy', child: _moodItem('😊', 'Happy')),
+                              DropdownMenuItem(value: 'sad', child: _moodItem('😢', 'Sad')),
+                              DropdownMenuItem(value: 'anxious', child: _moodItem('😰', 'Anxious')),
+                              DropdownMenuItem(value: 'angry', child: _moodItem('😠', 'Angry')),
+                              DropdownMenuItem(value: 'excited', child: _moodItem('🤩', 'Excited')),
+                              DropdownMenuItem(value: 'calm', child: _moodItem('😌', 'Calm')),
+                              DropdownMenuItem(value: 'tired', child: _moodItem('🥱', 'Tired')),
+                              DropdownMenuItem(value: 'grateful', child: _moodItem('🙏', 'Grateful')),
+                              DropdownMenuItem(value: 'neutral', child: _moodItem('😐', 'Neutral')),
                             ],
-                            onChanged: (v) =>
-                                setState(() => _filterMood = v ?? 'all'),
+                            onChanged: (v) => setState(() => _filterMood = v ?? 'all'),
                           ),
                         ),
                       ),
@@ -915,17 +886,17 @@ class _JournalScreenState extends State<JournalScreen> {
                 initialValue: mood,
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: const Color(0xFFEAF4FB),
+                  fillColor: Theme.of(context).colorScheme.surface,
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF9EC4E0),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.16),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF9EC4E0),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.28),
                       width: 2,
                     ),
                   ),
@@ -1053,6 +1024,7 @@ class _TabChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -1062,14 +1034,10 @@ class _TabChip extends StatelessWidget {
           margin: const EdgeInsets.all(5),
           padding: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
-            color: selected
-                ? const Color(0xFFB7D9F5)
-                : Colors.transparent,
+            color: selected ? cs.primary.withValues(alpha: 0.40) : Colors.transparent,
             borderRadius: BorderRadius.circular(999),
-            border: Border.all(
-              color: selected
-                  ? const Color(0xFF9EC4E0)
-                  : const Color(0xFFBFD8EA),
+              border: Border.all(
+              color: selected ? cs.primary.withValues(alpha: 0.28) : cs.surfaceContainerHighest,
               width: selected ? 1.2 : 1.0,
             ),
           ),
@@ -1079,7 +1047,7 @@ class _TabChip extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
-              color: const Color(0xFF0F1A25),
+              color: cs.onSurface,
               fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
             ),
           ),
@@ -1135,6 +1103,7 @@ class _MoodChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final emoji = _JournalScreenState._moodEmoji[mood] ?? '🙂';
     final displayLabel = mood.replaceAll('_', ' ');
+    final cs = Theme.of(context).colorScheme;
 
     return GestureDetector(
       onTap: onTap,
@@ -1143,14 +1112,10 @@ class _MoodChip extends StatelessWidget {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: selected
-              ? const Color(0xFFB7D9F5).withValues(alpha: 0.40)
-              : Colors.white,
+          color: selected ? cs.primary.withValues(alpha: 0.40) : cs.surface,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color: selected
-                ? const Color(0xFF9EC4E0)
-                : const Color(0xFFAEC9DD),
+            color: selected ? cs.primary.withValues(alpha: 0.36) : cs.surfaceContainerHighest,
           ),
         ),
         child: Row(
@@ -1163,7 +1128,7 @@ class _MoodChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                color: const Color(0xFF0F1A25),
+                color: cs.onSurface,
               ),
             ),
           ],
@@ -1185,24 +1150,25 @@ class _PromptRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final prompts = _JournalScreenState._moodPrompts[mood] ??
-        _JournalScreenState._moodPrompts['default'] ??
-        const <String>[];
+      _JournalScreenState._moodPrompts['default'] ??
+      const <String>[];
 
     if (prompts.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Need inspiration?',
           style: TextStyle(
             fontSize: 12,
-            color: Color(0xFF50697F),
+            color: cs.onSurface.withValues(alpha: 0.72),
           ),
         ),
         const SizedBox(height: 4),
-        Wrap(
+                Wrap(
           spacing: 6,
           runSpacing: 4,
           children: [
@@ -1213,10 +1179,10 @@ class _PromptRow extends StatelessWidget {
                   style: const TextStyle(fontSize: 11),
                 ),
                 onPressed: () => onTapPrompt(p),
-                backgroundColor: Colors.white,
+                backgroundColor: cs.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(999),
-                  side: const BorderSide(color: Color(0xFF9EC4E0)),
+                  side: BorderSide(color: cs.primary.withValues(alpha: 0.28)),
                 ),
               ),
             ActionChip(
@@ -1225,10 +1191,10 @@ class _PromptRow extends StatelessWidget {
                 style: TextStyle(fontSize: 11),
               ),
               onPressed: () => onTapPrompt('Today I feel because...'),
-              backgroundColor: Colors.white,
+              backgroundColor: cs.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(999),
-                side: const BorderSide(color: Color(0xFF9EC4E0)),
+                side: BorderSide(color: cs.primary.withValues(alpha: 0.28)),
               ),
             ),
           ],
@@ -1251,6 +1217,7 @@ class _FilterChipPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -1258,14 +1225,10 @@ class _FilterChipPill extends StatelessWidget {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: selected
-              ? const Color(0xFFB7D9F5).withValues(alpha: 0.40)
-              : Colors.white,
+          color: selected ? cs.primary.withValues(alpha: 0.40) : cs.surface,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color: selected
-                ? const Color(0xFF9EC4E0)
-                : const Color(0xFFAEC9DD),
+            color: selected ? cs.primary.withValues(alpha: 0.36) : cs.surfaceContainerHighest,
           ),
         ),
         child: Text(
@@ -1273,7 +1236,7 @@ class _FilterChipPill extends StatelessWidget {
           style: TextStyle(
             fontSize: 11,
             fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-            color: const Color(0xFF0F1A25),
+            color: cs.onSurface,
           ),
         ),
       ),

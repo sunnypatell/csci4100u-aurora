@@ -346,8 +346,13 @@ class _AiChatScreenState extends State<AiChatScreen> {
           : NavigationBar(
               selectedIndex: 0,
               onDestinationSelected: (i) {
+                // Map the local navbar indices to the AuroraShell indices.
+                // AuroraShell pages (internal) order: Home(0), Journal(1), Resources(2), HelpNearby(3), Settings(4)
+                // Local navbar indices: Home(0), Journal(1), Resources(2), HelpNearby(3), Settings(4)
+                const mapping = [0, 1, 2, 3, 4];
+                final shellIndex = mapping[i];
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => AuroraShell(initialIndex: i)),
+                  MaterialPageRoute(builder: (_) => AuroraShell(initialIndex: shellIndex)),
                   (route) => false,
                 );
               },
@@ -366,6 +371,11 @@ class _AiChatScreenState extends State<AiChatScreen> {
                   icon: Icon(Icons.library_books_outlined),
                   selectedIcon: Icon(Icons.library_books_rounded),
                   label: 'Resources',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.place_outlined),
+                  selectedIcon: Icon(Icons.place_rounded),
+                  label: 'Help Nearby',
                 ),
                 NavigationDestination(
                   icon: Icon(Icons.settings_outlined),

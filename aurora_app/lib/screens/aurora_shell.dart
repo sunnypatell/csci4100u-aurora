@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
 import 'journal_screen.dart';
 import 'resources.dart';
+import 'help_near_me.dart';
+import 'ai_chat.dart';
 import 'settings_screen.dart';
 
 /// AuroraShell
@@ -24,6 +26,7 @@ class _AuroraShellState extends State<AuroraShell> {
     DashboardScreen(),
     JournalScreen(),
     ResourcesPage(),
+    HelpNearMePage(),
     SettingsScreen(),
   ];
 
@@ -40,7 +43,18 @@ class _AuroraShellState extends State<AuroraShell> {
       body: IndexedStack(index: _index, children: _pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
+        onDestinationSelected: (i) {
+          // Destination indices: 0=Home,1=Journal,2=Resources,3=HelpNearby,4=Chat,5=Settings
+          // Our internal pages omit Chat, so map taps to pages and handle Chat as a standalone route.
+          if (i == 4) {
+            // Open Chat as a standalone screen (outside the shell) so the navbar there omits Chat.
+            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AiChatScreen()));
+            return;
+          }
+
+          final pageIndex = i < 4 ? i : i - 1; // shift indices after Chat
+          setState(() => _index = pageIndex);
+        },
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.dashboard_outlined),
@@ -56,6 +70,16 @@ class _AuroraShellState extends State<AuroraShell> {
             icon: Icon(Icons.library_books_outlined),
             selectedIcon: Icon(Icons.library_books_rounded),
             label: 'Resources',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.place_outlined),
+            selectedIcon: Icon(Icons.place_rounded),
+            label: 'Help Nearby',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.psychology_alt_outlined),
+            selectedIcon: Icon(Icons.psychology_alt_rounded),
+            label: 'Chat',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),

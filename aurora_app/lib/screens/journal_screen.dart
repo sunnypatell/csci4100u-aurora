@@ -9,6 +9,7 @@ import '../widgets/aurora_snackbar.dart';
 import '../services/notifications_service.dart';
 import 'timeline_tab.dart';
 import 'aurora_shell.dart';
+import '../widgets/small_glowing_candle.dart';
 
 class JournalScreen extends StatefulWidget {
   const JournalScreen({super.key});
@@ -224,6 +225,15 @@ class _JournalScreenState extends State<JournalScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFEAF4FB),
         elevation: 0,
+        centerTitle: true,
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 12.0),
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(child: SmallGlowingCandle()),
+          ),
+        ),
         title: const Text(
           'Journal',
           style: TextStyle(color: Color(0xFF0F1A25)),

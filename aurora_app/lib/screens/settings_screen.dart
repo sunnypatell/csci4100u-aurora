@@ -9,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '../services/auth_service.dart';
 import '../widgets/aurora_snackbar.dart';
+import '../widgets/small_glowing_candle.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -157,10 +158,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final age = _calculateAge(_tryParseDate(_birthdayCtrl.text));
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings', style: TextStyle(color: Color(0xFF2F2E2C))),
         backgroundColor: const Color(0xFFF5EFE7),
         elevation: 0,
+        centerTitle: true,
         iconTheme: const IconThemeData(color: Color(0xFF2F2E2C)),
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 12.0),
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(child: SmallGlowingCandle()),
+          ),
+        ),
+        title: const Text('Settings', style: TextStyle(color: Color(0xFF2F2E2C))),
       ),
       backgroundColor: const Color(0xFFF5EFE7),
       body: SafeArea(

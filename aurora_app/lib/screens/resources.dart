@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../widgets/aurora_snackbar.dart';
 import '../services/remote_resource_service.dart';
 import 'aurora_shell.dart';
+import '../widgets/small_glowing_candle.dart';
 import '../screens/resources/eat_dis.dart';
 import 'resources/adhd_help.dart';
 import 'resources/anx_dep.dart';
@@ -61,21 +62,21 @@ class _ResourcesPageState extends State<ResourcesPage>
         elevation: 0,
         centerTitle: true,
         automaticallyImplyLeading: false,
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 12.0),
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(child: SmallGlowingCandle()),
+          ),
+        ),
         title: const Text(
           'Resources',
           style: TextStyle(
             color: Color(0xFF2F2E2C),
-            fontWeight: FontWeight.w700,
           ),
         ),
-        leading: Navigator.canPop(context)
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                    color: Color(0xFF2F2E2C)),
-                tooltip: 'Back',
-                onPressed: () => Navigator.pop(context),
-              )
-            : null,
+        // leading replaced by `SmallGlowingCandle` for consistent branding
       ),
       body: Container(
         decoration: BoxDecoration(

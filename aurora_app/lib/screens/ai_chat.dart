@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../services/ai_service.dart';
+import 'aurora_shell.dart';
 
 /// ai_chat.dart
 /// Aurora chat UI (Gemini-backed).
@@ -224,6 +225,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
   Widget build(BuildContext context) {
     const bg = Color(0xFFF5EFE7);
     const ink = Color(0xFF2F2E2C);
+    final bool inShell = context.findAncestorWidgetOfExactType<AuroraShell>() != null;
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
@@ -336,6 +338,42 @@ class _AiChatScreenState extends State<AiChatScreen> {
           )
         ],
       ),
+      // When opened outside `AuroraShell`, show the persistent bottom
+      // navigation bar below the chat input area so the input + send
+      // controls remain visible above it.
+      bottomNavigationBar: inShell
+          ? null
+          : NavigationBar(
+              selectedIndex: 0,
+              onDestinationSelected: (i) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => AuroraShell(initialIndex: i)),
+                  (route) => false,
+                );
+              },
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.dashboard_outlined),
+                  selectedIcon: Icon(Icons.dashboard_rounded),
+                  label: 'Home',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.menu_book_outlined),
+                  selectedIcon: Icon(Icons.menu_book_rounded),
+                  label: 'Journal',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.library_books_outlined),
+                  selectedIcon: Icon(Icons.library_books_rounded),
+                  label: 'Resources',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.settings_outlined),
+                  selectedIcon: Icon(Icons.settings_rounded),
+                  label: 'Settings',
+                ),
+              ],
+            ),
     );
   }
 

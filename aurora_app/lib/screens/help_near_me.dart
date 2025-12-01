@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'aurora_shell.dart';
+import '../widgets/small_glowing_candle.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
@@ -183,6 +184,15 @@ class _HelpNearMePageState extends State<HelpNearMePage> {
         backgroundColor: const Color(0xFFF5EFE7),
         elevation: 0,
         centerTitle: true,
+        automaticallyImplyLeading: false,
+        leading: const Padding(
+          padding: EdgeInsets.only(left: 12.0),
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(child: SmallGlowingCandle()),
+          ),
+        ),
         title: const Text(
           'Help Near Me',
           style: TextStyle(color: Color(0xFF2F2E2C)),
